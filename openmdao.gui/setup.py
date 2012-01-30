@@ -29,7 +29,9 @@ setup(name='openmdao.gui',
       install_requires=[
           'jsonpickle', 
           'web.py', 
-          'django'
+          'django',
+          'pyvirtualdisplay',
+          'lazr.testing'
       ],
       entry_points="""
       # -*- Entry points: -*-
