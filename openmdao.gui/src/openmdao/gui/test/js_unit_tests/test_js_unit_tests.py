@@ -9,8 +9,9 @@ from nose.plugins.skip import SkipTest
 # For running tests using the JsTestDriver test runner
 from lazr.testing.jstestdriver import JsTestDriverTestCase
 
-# for running Xvfb. So we can run our tests headlessly
-if not sys.platform.startswith( "linux" ):
+# for running Xvfb. So we can run our tests headlessly. Xvfb does not
+#    exist on Windows
+if sys.platform.startswith( "linux" ):
     from pyvirtualdisplay import Display
 
 from openmdao.util.network import get_unused_ip_port
