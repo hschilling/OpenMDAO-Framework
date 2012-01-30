@@ -10,7 +10,8 @@ from nose.plugins.skip import SkipTest
 from lazr.testing.jstestdriver import JsTestDriverTestCase
 
 # for running Xvfb. So we can run our tests headlessly
-from pyvirtualdisplay import Display
+if not sys.platform.startswith( "linux" ):
+    from pyvirtualdisplay import Display
 
 from openmdao.util.network import get_unused_ip_port
 
