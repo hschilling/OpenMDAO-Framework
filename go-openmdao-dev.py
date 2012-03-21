@@ -1634,7 +1634,7 @@ def after_install(options, home_dir):
 
 
     #guireqs = ['web.py==0.36', 'jsonpickle==0.4.0', 'Django==1.3.1', 'path.py==2.2.2', 'easyprocess==0.1.3', 'pyvirtualdisplay==0.0.9', 'lazr.testing==0.1.2']
-    guireqs = ['web.py==0.36', 'jsonpickle==0.4.0', 'Django==1.3.1',  'easyprocess==0.1.3', 'pyvirtualdisplay==0.0.9', 'lazr.testing==0.1.2']
+    guireqs = ['web.py==0.36', 'jsonpickle==0.4.0', 'Django==1.3.1',  'easyprocess==0.1.3', 'pyvirtualdisplay==0.0.9', 'lazr.testing==0.1.2', 'mocker==1.1']
 
 
     
