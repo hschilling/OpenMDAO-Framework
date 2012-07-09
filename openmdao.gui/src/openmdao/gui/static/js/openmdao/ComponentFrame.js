@@ -182,6 +182,16 @@ openmdao.ComponentFrame = function(model,pathname) {
         if (self.pathname && self.pathname.length>0) {
             model.removeListener(self.pathname, handleMessage);
         }
+
+
+        
+        self.elm.find( ".ui-droppable" ).each( function() {
+            openmdao.drag_and_drop_manager.removeDroppable( this ) ;
+        }) ;
+
+
+
+
     };
 
     this.editObject(pathname);

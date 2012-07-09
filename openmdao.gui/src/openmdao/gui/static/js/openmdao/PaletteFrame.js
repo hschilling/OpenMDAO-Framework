@@ -157,7 +157,7 @@ openmdao.PaletteFrame = function(id,model) {
         
         // make everything draggable
         objtypes.draggable({ helper: 'clone', appendTo: 'body' });
-        objtypes.addClass('jstree-draggable'); // allow drop on jstree
+        //objtypes.addClass('jstree-draggable'); // allow drop on jstree
     }
 
     /** build HTML string for a package */

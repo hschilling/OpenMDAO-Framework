@@ -21,38 +21,38 @@ openmdao.DataflowPane = function(elm,model,pathname,name) {
     dataflow.setBackgroundImage( "/static/images/grid_10.png", true);
 
     // make the dataflow pane droppable
-    dataflowDiv.droppable ({
-        accept: '.objtype',
-        drop: function(ev,ui) {
-            // get the object that was dropped and where it was dropped
-            var droppedObject = jQuery(ui.draggable).clone(),
-                droppedName = droppedObject.text(),
-                droppedPath = droppedObject.attr("modpath"),
-                off = dataflowDiv.parent().offset(),
-                x = Math.round(ui.offset.left - off.left),
-                y = Math.round(ui.offset.top - off.top),
-                bestfig = dataflow.getBestCompartmentFigure(x,y);
-            var elem = dataflowDiv[0];
-            var zindex = document.defaultView.getComputedStyle(elem,null)
-                         .getPropertyValue("z-index");
-            debug.info(droppedName,'(modpath=',droppedPath,') ',
-                       'dropped on dataflow:',self.pathname,
-                       'z-index',dataflowDiv.css('z-index'),
-                       'zIndex',dataflowDiv.css('zIndex'));
-            if (droppedObject.hasClass('objtype')) {
-                openmdao.Util.promptForValue('Enter name for new '+droppedName,
-                    function(name) {
-                        if (bestfig) {
-                            model.addComponent(droppedPath,name,bestfig.pathname);
-                        }
-                        else {
-                            model.addComponent(droppedPath,name,self.pathname);
-                        }
-                    }
-                );
-            }
-        }
-    });
+    // dataflowDiv.droppable ({
+    //     accept: '.objtype',
+    //     drop: function(ev,ui) {
+    //         // get the object that was dropped and where it was dropped
+    //         var droppedObject = jQuery(ui.draggable).clone(),
+    //             droppedName = droppedObject.text(),
+    //             droppedPath = droppedObject.attr("modpath"),
+    //             off = dataflowDiv.parent().offset(),
+    //             x = Math.round(ui.offset.left - off.left),
+    //             y = Math.round(ui.offset.top - off.top),
+    //             bestfig = dataflow.getBestCompartmentFigure(x,y);
+    //         var elem = dataflowDiv[0];
+    //         var zindex = document.defaultView.getComputedStyle(elem,null)
+    //                      .getPropertyValue("z-index");
+    //         debug.info(droppedName,'(modpath=',droppedPath,') ',
+    //                    'dropped on dataflow:',self.pathname,
+    //                    'z-index',dataflowDiv.css('z-index'),
+    //                    'zIndex',dataflowDiv.css('zIndex'));
+    //         if (droppedObject.hasClass('objtype')) {
+    //             openmdao.Util.promptForValue('Enter name for new '+droppedName,
+    //                 function(name) {
+    //                     if (bestfig) {
+    //                         model.addComponent(droppedPath,name,bestfig.pathname);
+    //                     }
+    //                     else {
+    //                         model.addComponent(droppedPath,name,self.pathname);
+    //                     }
+    //                 }
+    //             );
+    //         }
+    //     }
+    // });
 
     /***********************************************************************
      *  privileged
