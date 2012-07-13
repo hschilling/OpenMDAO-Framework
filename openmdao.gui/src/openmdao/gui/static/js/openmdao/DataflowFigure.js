@@ -190,7 +190,7 @@ openmdao.DataflowFigure.prototype.createHTMLElement=function(){
 
     elm.data('corresponding_openmdao_object',this);
     elm.droppable ({
-        accept: '.objtype',
+        accept: '.IComponent',
         out: function(ev,ui){
             var o = elm.data('corresponding_openmdao_object');
             o.unhighlightAsDropTarget() ;

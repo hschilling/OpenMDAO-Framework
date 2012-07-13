@@ -32,7 +32,7 @@ openmdao.DataflowPane = function(elm,model,pathname,name) {
     /* only allow dropping on top most dataflow so you can add to globals */
     if ( dataflowID === "-dataflow" ) {
         dataflowDiv.droppable ({
-            accept: '.objtype',
+            accept: '.IComponent',
             
             
             out: function(ev,ui){
@@ -130,27 +130,12 @@ openmdao.DataflowPane = function(elm,model,pathname,name) {
 
 
 openmdao.DataflowPane.prototype.highlightAsDropTarget=function(){
-    var circleIMG = "url(/static/images/circle-plus-drop-zone.png)";
-    this.bottom_right.style.backgroundImage=circleIMG ;
-    this.bottom_left.style.backgroundImage=circleIMG ;
-    this.contentArea.style.backgroundColor="#CFD6FE";
-    this.footer.style.backgroundColor="#CFD6FE";
+    dataflow.setBackgroundImage( "/static/images/grid_10_highlighted.png", true);
     debug.info ("highlight", this.name ) ;
 };
 
 openmdao.DataflowPane.prototype.unhighlightAsDropTarget=function(){
-    var circleIMG ;
-    if (this.maxmin === '+') {
-        circleIMG = "url(/static/images/circle-plus.png)";
-    } else if (this.maxmin === '-') {
-        circleIMG = "url(/static/images/circle-minus.png)";
-    } else {
-        circleIMG = "url(/static/images/circle.png)";
-    }
-    this.bottom_right.style.backgroundImage=circleIMG ;
-    this.bottom_left.style.backgroundImage=circleIMG ;
-    this.contentArea.style.backgroundColor="white";
-    this.footer.style.backgroundColor="white";
+    dataflow.setBackgroundImage( "/static/images/grid_10.png", true);
     debug.info ("unhighlight", this.name ) ;
 };
 
