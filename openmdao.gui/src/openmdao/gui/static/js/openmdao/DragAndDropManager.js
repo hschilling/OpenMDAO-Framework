@@ -183,6 +183,7 @@ openmdao.DragAndDropManager=function() {
         var o = droppable.data('corresponding_openmdao_object');
         o.unhighlightAsDropTarget() ;
         highlighting_droppables.remove(droppable[0].id);
+        debug.info( "draggableOut id", droppable[0].id );
         
         openmdao.drag_and_drop_manager.updateHighlighting() ;
     };
@@ -199,7 +200,7 @@ openmdao.DragAndDropManager=function() {
         }
 
         highlighting_droppables.put(droppable[0].id, elm.css( "z-index" ) );
-
+        debug.info( "draggableOver id and z-index", droppable[0].id, elm.css( "z-index" ) );
         openmdao.drag_and_drop_manager.updateHighlighting() ;
     };
 
@@ -220,7 +221,7 @@ openmdao.DragAndDropManager=function() {
         // Find the div with the max id
         var max_zindex = -10000 ;
         var max_topmost_zindex = -10000 ;
-        var max_id = null ;
+        var max_id = "" ;
         highlighting_droppables.each( function( id, zindex ) { 
             var div = $( id ) ;
             var div_object = jQuery( div ) ;
@@ -229,9 +230,7 @@ openmdao.DragAndDropManager=function() {
             {
                 tmp_elm = tmp_elm.parent();
             }
-
             calculated_zindex = tmp_elm.css( "z-index" ) ;
-
 
             // Find the zindex for the topmost element
             tmp_elm = div_object  ;
@@ -264,6 +263,9 @@ openmdao.DragAndDropManager=function() {
 
 
         } ) ;
+
+        debug.info( "updated highlighting: max_zindex, max_topmost_zindex, max_id", 
+                    max_zindex, max_topmost_zindex, max_id ) ;
         
         // Now only highlight to top one
         highlighting_droppables.each( function( id, zindex ) { 
@@ -271,8 +273,9 @@ openmdao.DragAndDropManager=function() {
             var div_object = jQuery( div ) ;
             var o = div_object.data('corresponding_openmdao_object');
             if ( id == max_id ) {
+                debug.info( "highlighting", div_object[0].id ) ;
                 o.highlightAsDropTarget()
-
+                
                 openmdao.drag_and_drop_manager.drop_target = div_object ;
 
 
@@ -281,6 +284,42 @@ openmdao.DragAndDropManager=function() {
             }
         } ) ;
 
+
+
+
     };
+
+    /** Find the zindex for the element by finding the first parent 
+     has a non-auto zindex */
+    this.computeCalculatedZindex = function(elm) {
+        var tmp_elm = elm  ;
+        while ( tmp_elm.css( "z-index" ) == "auto" )
+        {
+            tmp_elm = tmp_elm.parent();
+        }
+        calculated_zindex = tmp_elm.css( "z-index" ) ;
+        return calculated_zindex ;
+    };
+
+    /** Find the zindex for the topmost element  */
+    this.computeTopmostZindex = function(elm) {
+        var tmp_elm = elm  ;
+        var topmost_zindex = null ;
+        while ( tmp_elm.parent() && ! tmp_elm.is("body") ) 
+        {
+            tmp_elm = tmp_elm.parent() ;
+            if ( tmp_elm.css( "z-index" ) != "auto" ) {
+                topmost_zindex = tmp_elm.css( "z-index" ) ;
+            }
+        }
+        topmost_zindex = tmp_elm.css( "z-index" ) ;
+        return topmost_zindex ;
+    };
+
+
+
+
+
+
 
 }

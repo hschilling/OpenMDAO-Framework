@@ -16,31 +16,31 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
     //slots.setBackgroundImage( "/static/images/grid_10.png", true);
 
     // make the slots pane droppable
-    slotsDiv.droppable ({
-        accept: '.objtype',
-        drop: function(ev,ui) {
-            // get the object that was dropped and where it was dropped
-            var droppedObject = jQuery(ui.draggable).clone(),
-                droppedName = droppedObject.text(),
-                droppedPath = droppedObject.attr("path"),
-                off = slotsDiv.parent().offset(),
-                x = Math.round(ui.offset.left - off.left),
-                y = Math.round(ui.offset.top - off.top);
-            var elem = slotsDiv[0];
-            var zindex = document.defaultView.getComputedStyle(elem,null).getPropertyValue("z-index");
-            debug.info(droppedName,'dropped on slots:',self.pathname,'z-index',slotsDiv.css('z-index'),'zIndex',slotsDiv.css('zIndex'));
-            if (droppedObject.hasClass('objtype')) {
-                openmdao.Util.promptForValue('Specify a name for the new '+droppedName,function(name) {
-                    model.addComponent(droppedPath,name,self.pathname);
-                });
-            }
-            else if (droppedObject.hasClass('obj')) {
-                var cmd = self.pathname+'='+droppedPath;
-                debug.info('SlotsPane:',cmd);
-                model.issueCommand(cmd);
-            }
-        }
-    });
+    // slotsDiv.droppable ({
+    //     accept: '.objtype',
+    //     drop: function(ev,ui) {
+    //         // get the object that was dropped and where it was dropped
+    //         var droppedObject = jQuery(ui.draggable).clone(),
+    //             droppedName = droppedObject.text(),
+    //             droppedPath = droppedObject.attr("path"),
+    //             off = slotsDiv.parent().offset(),
+    //             x = Math.round(ui.offset.left - off.left),
+    //             y = Math.round(ui.offset.top - off.top);
+    //         var elem = slotsDiv[0];
+    //         var zindex = document.defaultView.getComputedStyle(elem,null).getPropertyValue("z-index");
+    //         debug.info(droppedName,'dropped on slots:',self.pathname,'z-index',slotsDiv.css('z-index'),'zIndex',slotsDiv.css('zIndex'));
+    //         if (droppedObject.hasClass('objtype')) {
+    //             openmdao.Util.promptForValue('Specify a name for the new '+droppedName,function(name) {
+    //                 model.addComponent(droppedPath,name,self.pathname);
+    //             });
+    //         }
+    //         else if (droppedObject.hasClass('obj')) {
+    //             var cmd = self.pathname+'='+droppedPath;
+    //             debug.info('SlotsPane:',cmd);
+    //             model.issueCommand(cmd);
+    //         }
+    //     }
+    // });
 
     /** update slots by recreating figures from JSON slots data
      *  TODO: prob just want to iterate through & update existing figures
