@@ -21,8 +21,6 @@ openmdao.DataflowPane = function(elm,model,pathname,name) {
     dataflow.setBackgroundImage( "/static/images/grid_10.png", true);
 
 
-    openmdao.drag_and_drop_manager.addDroppable( dataflowDiv ) ;
-
     this.openmdao_model = model;
     this.dataflowDiv = dataflowDiv ;
     dataflowDiv.data('corresponding_openmdao_object',this);
@@ -30,10 +28,12 @@ openmdao.DataflowPane = function(elm,model,pathname,name) {
     debug.info("Creating dataflowDiv", dataflowID ) ;
 
     /* only allow dropping on top most dataflow so you can add to globals */
-    if ( dataflowID === "-dataflow" ) {
-        dataflowDiv.droppable ({
+    if ( dataflowID === "-dataflowqqqq" ) {
+        openmdao.drag_and_drop_manager.addDroppable( dataflowDiv ) ;
+
+        /* dataflowDiv.droppable ({ */
+        dataflowDiv.parent().parent().parent().parent().droppable ({
             accept: '.IComponent',
-            
             
             out: function(ev,ui){
                 

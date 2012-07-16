@@ -2,7 +2,9 @@
 var openmdao = (typeof openmdao === "undefined" || !openmdao ) ? {} : openmdao ;
 
 openmdao.SlotFigure=function(myModel,pathname,type,filled){
+
     this.myModel = myModel;
+    self.myModel = myModel;
     this.pathname = pathname;
     this.type = type;
     this.filled = filled;
@@ -43,6 +45,7 @@ openmdao.SlotFigure.prototype.type="SlotFigure";
 
 openmdao.SlotFigure.prototype.createHTMLElement=function(){
     var circleIMG = "url(/static/images/circle.png)";
+    var self = this;
 
     var item=document.createElement("div");
     item.id=this.id;
@@ -169,23 +172,31 @@ openmdao.SlotFigure.prototype.createHTMLElement=function(){
         }, 
 
         actualDropHandler: function(ev,ui) { 
+            
+            /* new way */
             var droppedObject = jQuery(ui.draggable).clone(),
             droppedName = droppedObject.text(),
             droppedPath = droppedObject.attr("modpath"),
-            off = elm.parent().offset(),
-            x = Math.round(ui.offset.left - off.left),
-            y = Math.round(ui.offset.top - off.top),
-            o = elm.data('corresponding_openmdao_object'),
-            model = o.myModel ;
+            module = openmdao.Util.getPath(droppedPath),
+            klass = openmdao.Util.getName(droppedPath);
+            
+            cmd = 'from '+module+' import '+klass+'\n'
+                +  self.pathname+'='+klass+'()';
+            self.myModel.issueCommand(cmd);
+            
+            /* old way */
+            // var droppedObject = jQuery(ui.draggable).clone(),
+            // droppedName = droppedObject.text(),
+            // droppedPath = droppedObject.attr("modpath"),
+            // off = elm.parent().offset(),
+            // x = Math.round(ui.offset.left - off.left),
+            // y = Math.round(ui.offset.top - off.top),
+            // o = elm.data('corresponding_openmdao_object'),
+            // model = o.myModel ;
+            // model.addComponent(droppedPath,o.name,o.pathname);
 
             openmdao.drag_and_drop_manager.clearHighlightingDroppables() ;
             openmdao.drag_and_drop_manager.clearDroppables() ;
-
-            openmdao.Util.promptForValue('Enter name for new '+droppedName,
-                    function(name) {
-                        model.addComponent(droppedPath,name,o.pathname);
-                    }
-                                        );
         }
 
     }
