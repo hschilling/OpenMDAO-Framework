@@ -17,6 +17,8 @@ through the MetaModel.
 
 .. testcode:: MetaModel_parts
 
+    import sys
+
     from openmdao.main.api import Assembly, Component, SequentialWorkflow, set_as_top
     from math import sin
 
@@ -24,10 +26,8 @@ through the MetaModel.
     from openmdao.lib.drivers.api import DOEdriver
     from openmdao.lib.doegenerators.api import FullFactorial, Uniform
     from openmdao.lib.components.api import MetaModel
-    from openmdao.lib.casehandlers.api import CSVCaseRecorder
-    from openmdao.lib.surrogatemodels.api import KrigingSurrogate
-
-
+    from openmdao.lib.casehandlers.api import DBCaseRecorder
+    from openmdao.lib.surrogatemodels.api import FloatKrigingSurrogate
 
     class Sin(Component): 
     
@@ -62,13 +62,15 @@ specific output variables. We cover that in the next tutorial.
 
             #Components
             self.add("sin_meta_model",MetaModel())
-            self.sin_meta_model.default_surrogate = KrigingSurrogate()
             self.sin_meta_model.model = Sin()
+            self.sin_meta_model.default_surrogate = FloatKrigingSurrogate()
 
 Once the `model` and `default_surrogate` slots of the MetaModel have been filled, the MetaModel
-is ready for training. 
+is ready for training. (Note the following code is part of the configure method in the 
+Simulation class.)
 
- .. testcode:: MetaModel_parts
+
+.. testcode:: MetaModel_parts
     :hide:
     
     self =set_as_top(Simulation())
@@ -82,7 +84,7 @@ is ready for training.
             self.DOE_Trainer.add_parameter("sin_meta_model.x",low=0,high=20)
             self.DOE_Trainer.case_outputs = ["sin_meta_model.f_x"]
             self.DOE_Trainer.add_event("sin_meta_model.train_next")
-            self.DOE_Trainer.recorders = [CSVCaseRecorder()]
+            self.DOE_Trainer.recorders = [DBCaseRecorder()]
         
 In this case, we're going to train with a DOEdriver, called ``DOE_Trainer``.  
 We specify a FullFactorial DOEgenerator, which creates a set of evenly spaced 
@@ -108,24 +110,26 @@ validation points are being used in this particular case.
 
 Here, we add a new instance of the sine component called ``sin_calc``, 
 so we can calculate an actual and a predicted value simultaneously. 
+(Note the following code is part of the configure method in the 
+Simulation class.)
 
 .. testcode:: MetaModel_parts
 
-        #MetaModel Validation
-        self.add("sin_calc",Sin())
-        self.add("DOE_Validate",DOEdriver())
-        self.DOE_Validate.DOEgenerator = Uniform()
-        self.DOE_Validate.DOEgenerator.num_samples = 20
-        self.DOE_Validate.add_parameter(("sin_meta_model.x","sin_calc.x"),low=0,high=20)
-        self.DOE_Validate.case_outputs = ["sin_calc.f_x","sin_meta_model.f_x"]
-        self.DOE_Validate.recorders = [CSVCaseRecorder()]
+            #MetaModel Validation
+            self.add("sin_calc",Sin())
+            self.add("DOE_Validate",DOEdriver())
+            self.DOE_Validate.DOEgenerator = Uniform()
+            self.DOE_Validate.DOEgenerator.num_samples = 100
+            self.DOE_Validate.add_parameter(("sin_meta_model.x","sin_calc.x"),low=0,high=20)
+            self.DOE_Validate.case_outputs = ["sin_calc.f_x","sin_meta_model.f_x"]
+            self.DOE_Validate.recorders = [DBCaseRecorder()]
         
-        #Iteration Hierarchy
-        self.driver.workflow = SequentialWorkflow()
-        self.driver.workflow.add(['DOE_Trainer','DOE_Validate'])
-        self.DOE_Trainer.workflow.add('sin_meta_model')
-        self.DOE_Validate.workflow.add('sin_meta_model')
-        self.DOE_Validate.workflow.add('sin_calc')
+            #Iteration Hierarchy
+            self.driver.workflow = SequentialWorkflow()
+            self.driver.workflow.add(['DOE_Trainer','DOE_Validate'])
+            self.DOE_Trainer.workflow.add('sin_meta_model')
+            self.DOE_Validate.workflow.add('sin_meta_model')
+            self.DOE_Validate.workflow.add('sin_calc')
         
 Notice that the ``train_next`` event is not added to the ``DOE_Validate`` driver like it was for for
 the training driver.  MetaModel automatically runs in `predict` mode when this event is not set.
@@ -157,28 +161,42 @@ separately.
 
 Finally, the first two lines of the following code are required to actually run the 
 MetaModel.  The remaining code is for accessing and printing the data. Using the data recorded 
-by the implementation of ``DBCaseRecorder()``, we can access and print the run data. 
+by the implementation of ``CSVCaseRecorder()``, we can access and print the run data. 
         
+.. testsetup:: MetaModel_parts
+    :hide:
+
+    __name__ = "__main__"
+
 .. testcode:: MetaModel_parts
 
+    __name__ = "__main__"
     if __name__ == "__main__":
         
-        sim = set_as_top(Simulation())
+        sim = Simulation()
         sim.run()
                    
         #This is how you can access any of the data
         train_data = sim.DOE_Trainer.recorders[0].get_iterator()
         validate_data = sim.DOE_Validate.recorders[0].get_iterator()
+    
         train_inputs = [case['sin_meta_model.x'] for case in train_data]
-        #Note: Kriging outputs NormalDistribution (not float), so you need to grab
-        #    the mean (.mu) or the std-deviation (.sigma) from the returned object
-        train_actual = [case['sin_meta_model.f_x'].mu for case in train_data]
+        train_actual = [case['sin_meta_model.f_x'] for case in train_data]
         inputs = [case['sin_calc.x'] for case in validate_data]    
         actual = [case['sin_calc.f_x'] for case in validate_data]  
-        predicted = [case['sin_meta_model.f_x'].mu for case in validate_data]
+        predicted = [case['sin_meta_model.f_x'] for case in validate_data]
+
+        if '--noplot' not in sys.argv:
+            import pylab as p
     
+            p.scatter(train_inputs,train_actual,c='g',label="training data")
+            p.scatter(inputs,predicted,c='b',label="predicted result")
+            p.legend()
+            p.show()
+        
         for a,p in zip(actual,predicted): 
             print "%1.3f, %1.3f"%(a,p)
-            
+
+
 To view this example, and try running and modifying the code for yourself, you can download it here:
 :download:`krig_sin.py </../examples/openmdao.examples.metamodel_tutorial/openmdao/examples/metamodel_tutorial/krig_sin.py>`.

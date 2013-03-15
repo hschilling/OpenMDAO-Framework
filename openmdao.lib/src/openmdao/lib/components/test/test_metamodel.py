@@ -11,7 +11,10 @@ from openmdao.main.interfaces import implements, ICaseRecorder
 from openmdao.main.uncertain_distributions import NormalDistribution
 
 from openmdao.lib.casehandlers.api import ListCaseIterator
-from openmdao.lib.components.metamodel import MetaModel
+#from openmdao.lib.components.metamodel import MetaModel
+#from openmdao.lib.components.metamodel_getting_outputs_working import MetaModel
+#from openmdao.lib.components.metamodel_getting_outputs_working_with_dict import MetaModel
+from openmdao.lib.components.metamodel_check_at_runtime import MetaModel
 from openmdao.lib.surrogatemodels.kriging_surrogate import KrigingSurrogate
 from openmdao.lib.surrogatemodels.logistic_regression import LogisticRegression
 
@@ -263,11 +266,15 @@ class MetaModelTestCase(unittest.TestCase):
         meta_asm.metamodel.excludes = ['a']
         self.assertTrue('a' not in meta_asm.metamodel.list_inputs())
         self.assertTrue('b' in meta_asm.metamodel.list_inputs())
-        self.assertTrue(hasattr(meta_asm.metamodel, 'sur_c'))
-        self.assertTrue(hasattr(meta_asm.metamodel, 'sur_d'))
+        self.assertTrue(meta_asm.metamodel.surrogates.has_key( 'c'))
+        self.assertTrue(meta_asm.metamodel.surrogates.has_key( 'd'))
+        # self.assertTrue(hasattr(meta_asm.metamodel, 'sur_c'))
+        # self.assertTrue(hasattr(meta_asm.metamodel, 'sur_d'))
         meta_asm.metamodel.excludes = ['d']
-        self.assertTrue(hasattr(meta_asm.metamodel, 'sur_c'))
-        self.assertTrue(not hasattr(meta_asm.metamodel, 'sur_d'))
+        self.assertTrue(meta_asm.metamodel.surrogates.has_key( 'c'))
+        self.assertTrue(not meta_asm.metamodel.surrogates.has_key( 'd'))
+        # self.assertTrue(hasattr(meta_asm.metamodel, 'sur_c'))
+        # self.assertTrue(not hasattr(meta_asm.metamodel, 'sur_d'))
         
         
     def test_comp_error(self): 
@@ -431,6 +438,7 @@ class MetaModelTestCase(unittest.TestCase):
         simple.run()
         metamodel.run()
         
+        #import pdb; pdb.set_trace()
         self.assertEqual(metamodel.c.getvalue(), 3.)
         self.assertEqual(metamodel.d.getvalue(), -1.)
         self.assertEqual(metamodel.c.getvalue(), simple.c)
@@ -439,9 +447,11 @@ class MetaModelTestCase(unittest.TestCase):
     def test_multi_surrogate_models_bad_surrogate_dict(self): 
         metamodel = MetaModel()
         metamodel.name = 'meta'
-        metamodel.sur_d = KrigingSurrogate()
-        try: 
-            metamodel.model = Simple()
+        metamodel.surrogates[ 'd' ] = KrigingSurrogate()
+        metamodel.model = Simple()
+        try:
+            import pdb; pdb.set_trace()
+            metamodel.run()
         except RuntimeError,err: 
             self.assertEqual("meta: No default surrogate model is defined and the following outputs do not have a surrogate model: ['c']. "
             "Either specify default_surrogate, or specify a surrogate model for all "
@@ -451,7 +461,8 @@ class MetaModelTestCase(unittest.TestCase):
             
         metamodel = MetaModel()
         metamodel.name = 'meta'
-        metamodel.sur_d = KrigingSurrogate()
+        #metamodel.sur_d = KrigingSurrogate()
+        metamodel.surrogates['d'] = KrigingSurrogate()
         metamodel.includes = ['a','b','d']
         try: 
             metamodel.model = Simple()
@@ -463,8 +474,10 @@ class MetaModelTestCase(unittest.TestCase):
         metamodel = MetaModel()
         metamodel.name = 'meta'
         metamodel.model = Simple()
-        metamodel.sur_d = KrigingSurrogate()
-        metamodel.sur_c = LogisticRegression()
+        metamodel.surrogates['d'] = KrigingSurrogate()
+        metamodel.surrogates['c'] = LogisticRegression()
+        # metamodel.sur_d = KrigingSurrogate()
+        # metamodel.sur_c = LogisticRegression()
         metamodel.recorder = DumbRecorder()
         simple = Simple()
         
@@ -479,7 +492,8 @@ class MetaModelTestCase(unittest.TestCase):
         metamodel.train_next = True
         simple.run()
         metamodel.run()
-        
+
+        import pdb; pdb.set_trace()
         self.assertTrue(isinstance(metamodel.d,NormalDistribution))
         self.assertTrue(isinstance(metamodel.c,float))
         
@@ -509,29 +523,6 @@ class MetaModelTestCase(unittest.TestCase):
         self.assertEqual(metamodel.surrogate_input_names(), ['b'])
         self.assertEqual(metamodel.surrogate_output_names(), ['d'])
         
-    def test_include_exclude(self):
-        metamodel = MyMetaModel()
-        metamodel.default_surrogate = KrigingSurrogate()
-        metamodel.includes = ['a','d']
-        try:
-            metamodel.excludes = ['b','c']
-        except RuntimeError as err:
-            self.assertEqual(str(err), 
-                             ': includes and excludes are mutually exclusive')
-        else:
-            self.fail('Expected RuntimeError')
-        self.assertEqual(metamodel.excludes, [])
-            
-        metamodel.includes = []
-        metamodel.excludes = ['b','c']
-        try:
-            metamodel.includes = ['a','d']
-        except Exception as err:
-            self.assertEqual(str(err), 
-                             ': includes and excludes are mutually exclusive')
-        else:
-            self.fail('Expected Exception')
-        self.assertEqual(metamodel.includes, [])
         
         
     def test_reset_nochange_inputs(self):
