@@ -1,18 +1,42 @@
 """ Metamodel provides basic Meta Modeling capability."""
 
-from copy import deepcopy
+# pylint: disable-msg=C0111,C0103
+# disable complaints about Module 'numpy' has no 'array' member
+# pylint: disable-msg=E1101
 
-# pylint: disable-msg=E0611,F0401
+# Disable complaints Invalid name "setUp" (should match [a-z_][a-z0-9_]{2,30}$)
+# pylint: disable-msg=C0103
+
+# Disable complaints about not being able to import modules that Python
+#     really can import
+# pylint: disable-msg=F0401,E0611
+
+# Disable complaints about Too many arguments (%s/%s)
+# pylint: disable-msg=R0913
+
+# Disable complaints about Too many local variables (%s/%s) Used
+# pylint: disable-msg=R0914
+
+# Disable complaints about Line too long 
+# pylint: disable-msg=C0301
+
+# Disable complaints about Comma not followed by a space Used when a comma (",") is not followed by a space
+# pylint: disable-msg=C0324
+
+from copy import deepcopy, copy
+
 from enthought.traits.trait_base import not_none
 from enthought.traits.has_traits import _clone_trait
 
-from openmdao.main.api import Component, Case
-from openmdao.lib.datatypes.api import Slot, List, Str, Float, Int, Event, Dict, Bool, on_trait_change
+from openmdao.main.case import flatteners
+from openmdao.main.api import Component, Case, VariableTree
+from openmdao.main.datatypes.uncertaindist import UncertainDistVar
 from openmdao.main.interfaces import IComponent, ISurrogate, ICaseRecorder, \
      ICaseIterator, IUncertainVariable
 from openmdao.main.mp_support import has_interface
-from openmdao.util.log import logger
-from openmdao.main.datatypes.uncertaindist import UncertainDistVar
+
+from openmdao.lib.datatypes.api import Slot, List, Str, Float, Int, Event, Dict, Bool
+
 from openmdao.util.typegroups import int_types, real_types
 
 _missing = object()
@@ -25,7 +49,6 @@ def copy_modelvar_to_metamodel( surrogate, model_node, varname, metamodel_node )
        a Float and the surrogate turns that into an uncertain value,
        the copying needs to handle that
     '''
-    from openmdao.main.api import VariableTree
     if not isinstance( model_node.get(varname), VariableTree):
         val = surrogate.get_uncertain_value(model_node.get(varname))
         if has_interface(val, IUncertainVariable):
@@ -35,14 +58,13 @@ def copy_modelvar_to_metamodel( surrogate, model_node, varname, metamodel_node )
         elif isinstance(val, int_types):
             ttype = Int
         else:
-            self.raise_exception("value type of '%s' is not a supported surrogate return value" %
+            raise ValueError("value type of '%s' is not a supported surrogate return value" %
                                  val.__class__.__name__)
         metamodel_node.add(varname, ttype(default_value=val, iotype='out', 
                                           desc=model_node.trait(varname).desc,
                                           units=model_node.trait(varname).units))
         setattr(metamodel_node, varname, val)
     else: # a vartree
-        #import pdb; pdb.set_trace()
         vartree = model_node.get(varname)
         # need to copy/clone the vartree and add to the metamodel
         vartree_copy = copy.copy( getattr( vartree, varname ) )
@@ -116,9 +138,7 @@ class MetaModel(Component):
         # _mm_class_traitnames
         self._mm_class_traitnames = set(self.traits(iotype=not_none).keys())
 
-
         self.on_trait_change(self._surrogate_updated, "surrogates_items")
-
         
     def _train_next_fired(self):
         self._train = True
@@ -135,9 +155,6 @@ class MetaModel(Component):
 
     def _warm_start_data_changed(self, oldval, newval):
         self.reset_training_data = True
-
-        print "in warm_start"
-        #import pdb; pdb.set_trace()
 
         # build list of inputs
         for case in newval:
@@ -156,7 +173,6 @@ class MetaModel(Component):
                 else:
                     if inp_val is not None:
                         inputs.append(inp_val)
-            print "inputs", inputs[0], id( inputs[1]), inputs[1] # qqq
             self._training_input_history.append(inputs)
 
             for output_name in self.surrogate_output_names():
@@ -174,9 +190,9 @@ class MetaModel(Component):
         self._new_train_data = True
 
     def check_config(self):
-        '''called as part of pre execute'''
+        '''called as part of pre_execute'''
 
-        # 1. model must be set
+        # 1. model must be set 
         if self.model is None:
             self.raise_exception("MetaModel object must have a model!",
                                  RuntimeError)
@@ -197,7 +213,7 @@ class MetaModel(Component):
         for exclude in self.excludes:
             if exclude not in input_and_output_names:
                 self.raise_exception('The exclude "%s" is not one of the '
-                                     'model inputs or outputs ' % include, ValueError)
+                                     'model inputs or outputs ' % exclude, ValueError)
 
         # 4. Either there are no surrogates set and no default surrogate ( just do passthrough )
         #   or
@@ -205,7 +221,7 @@ class MetaModel(Component):
         #  the default surrogate
         if self.default_surrogate is None:
             no_sur = []
-            for name in self.surrogate_output_names(): ##########??? Need to test no default surrogate
+            for name in self.surrogate_output_names():
                 if not self.surrogates[ name ]:
                     no_sur.append(name)
             if len(no_sur) > 0 and len(no_sur) != len(self._surrogate_output_names):
@@ -242,7 +258,6 @@ class MetaModel(Component):
                 case_outputs = []
 
                 for name, output_history in self._training_data.items():
-                    print "training set", name, output_history
                     case_outputs.append(('.'.join([self.name, name]),
                                          output_history[-1]))
                 # save the case, making sure to add out name to the local input name since
@@ -290,7 +305,6 @@ class MetaModel(Component):
                 else:
                     training_input_history = self._training_input_history
                 for name, output_history in self._training_data.items():
-                    #import pdb; pdb.set_trace()
                     surrogate = self._get_surrogate(name)
                     if surrogate is not None:
                         surrogate.train(training_input_history, output_history)
@@ -299,7 +313,6 @@ class MetaModel(Component):
 
             inputs = []
             for i, name in enumerate(self.surrogate_input_names()):
-                #val = getattr(self, name) # qqq
                 val = self.get(name)
                 cval = self._const_inputs.get(i, _missing)
                 if cval is _missing:
@@ -309,22 +322,13 @@ class MetaModel(Component):
                     self.raise_exception("ERROR: training input '%s' was a constant value of (%s) but the value has changed to (%s)." %
                                          (name, cval, val), ValueError)
 
-
-            #import pdb; pdb.set_trace()
             for name in self._training_data:
                 surrogate = self._get_surrogate(name)
                 # copy output to boundary
                 if surrogate is None:
-                    #root_name, delim, leaf_name = name.partition(".")
-                    #setattr( getattr( self, root_name ), leaf_name, self.model.get( name ) )
                     self._set_output(name,self.model.get( name ))
-                    #setattr(self, name, getattr(self.model, name)) # no surrogate. use outputs from model
                 else:
-                    #import pdb; pdb.set_trace()
-                    #root_name, delim, leaf_name = name.partition(".")
-                    #setattr( getattr( self, root_name ), leaf_name, surrogate.predict(inputs) )
                     self._set_output(name,surrogate.predict(inputs))
-                    #setattr(self, name, surrogate.predict(inputs)e)
 
 
     def _set_output(self,path,value):
@@ -362,10 +366,6 @@ class MetaModel(Component):
         # TODO: check for nested MMs?  Is this a problem?
         # TODO: check for name collisions between MetaModel class traits and traits from model
 
-        #import pdb; pdb.set_trace() # qqq
-        print "in model changed"
-
-        #import pdb; pdb.set_trace()
         if newmodel is not None and not has_interface(newmodel, IComponent):
             self.raise_exception('model of type %s does not implement the IComponent interface' % type(newmodel).__name__,
                                  TypeError)
@@ -385,9 +385,6 @@ class MetaModel(Component):
         the appropriate type of output Variable based on the return value
         of get_uncertain_value on the surrogate.
         """
-        
-        from openmdao.main.api import VariableTree
-
         model_node = self.model
         metamodel_node = self
         for subname in varname.split("."):
@@ -407,13 +404,13 @@ class MetaModel(Component):
                                               units=model_node.trait(subname).units))
                 setattr(metamodel_node, subname, val)
             else: # a vartree
-                #import pdb; pdb.set_trace()
-                import copy
+        
+
                 vartree = model_node.get(subname)
                 # need to copy/clone the vartree and add to the metamodel
                 # First check to see if metamodel already has a copy.
                 if not hasattr(metamodel_node, subname):
-                    vartree_copy = copy.copy( vartree )
+                    vartree_copy = copy( vartree )
                     metamodel_node.add(subname,vartree_copy)
                 model_node = vartree
                 metamodel_node = getattr( metamodel_node, subname )
@@ -422,26 +419,20 @@ class MetaModel(Component):
                 
 
     def _surrogate_updated(self, obj, name, old, new):
-        """Called when a surrogate Slot (sur_*) is updated."""
+        """Called when self.surrogates is updated."""
 
         # if surrogate set to be None
            # put copies of the default surrogate
            # remove that surrogate name from the list of overrides
-        #if new is None:
         if new.changed:
             varname = new.changed.keys()[0]
-            #newvalue = new.changed.values()[0]
             if self.surrogates[ varname ] is None:
                 if self.default_surrogate:
                     self._default_surrogate_copies[varname] = deepcopy(self.default_surrogate)
                 if varname in self._surrogate_overrides:
                     self._surrogate_overrides.remove(varname)
             else:
-                ##import pdb; pdb.set_trace()
                 self._surrogate_overrides.add(varname)
-                #varname = name[len(__surrogate_prefix__):]
-                
-                #self._add_var_for_surrogate(getattr(self, name), varname)
                 self._add_var_for_surrogate(self.surrogates[varname], varname)
                 ###### TODO: not sure how to handle this since I do not
                 #             know if I have access to the old value
@@ -459,91 +450,52 @@ class MetaModel(Component):
         """Copy the values of the MetaModel's inputs into the inputs of the
         model. Returns the values of the inputs.
         """
-
-        #import pdb; pdb.set_trace() # qqq
-
         input_values = []
         for name in self.surrogate_input_names():
-            #inp = getattr(self, name)
-            inp = self.get(name) # qqq
+            inp = self.get(name)
             input_values.append(inp)
-
-            print "update_model_input", name, id(inp), inp # qqq
-            
-            #setattr(self.model, name, inp)
-            self.model.set(name, inp) # qqq
+            self.model.set(name, inp)
         return input_values
 
     def _get_surrogate(self, name):
         """Return the designated surrogate for the given output."""
 
-        print "_get_surrogate", name
-        #import pdb; pdb.set_trace()
-        
-        #surrogate = getattr(self, __surrogate_prefix__+ name.replace(".","__"), None)
         surrogate = self.surrogates.get( name )
         if surrogate is None and self.default_surrogate is not None:
-            #surrogate = self._default_surrogate_copies.get(__surrogate_prefix__+name.replace(".","__"))
             surrogate = self._default_surrogate_copies.get(name)
 
-
-        print "returning surrogate", surrogate
         return surrogate
     
     def update_outputs_from_model(self):
         """Copy output values from the model into the MetaModel's outputs, and
         if training, save the output associated with surrogate.
         """
-
-        print "in update_outputs_from_model"
-
-        #import pdb; pdb.set_trace()
         for name in self.surrogate_output_names():
 
-            print "surrogate name", name
             out = self.model.get(name)
-            #out = getattr(self.model, name)
             surrogate = self._get_surrogate(name)
             if surrogate is None:
-                #root_name,delim,leaf_name = name.partition(".")
-                #setattr(getattr(self,root_name),leaf_name,out)
                 self._set_output(name,out)
-                #self.set(name, out)
-                #setattr(self, name, out)
             else:
-                #setattr(self, name, surrogate.get_uncertain_value(out))
-                #root_name,delim,leaf_name = name.partition(".")
-                #setattr(getattr(self,root_name),leaf_name,surrogate.get_uncertain_value(out))
                 self._set_output(name,surrogate.get_uncertain_value(out))
-                #self.set( name, surrogate.get_uncertain_value(out))
             if self._train:
                 self._training_data[name].append(out)  # save to training output history
 
     def _add_input(self, name):
         """Adds the specified input variable."""
 
-        #import pdb; pdb.set_trace() # qqq
-
-
-        #def get_trait ( self, name, copy = False ):
         root_name = name.partition(".")[0]
         if not self.get_trait( root_name ):
             self.add_trait(root_name, _clone_trait(self.model.trait(root_name)))
-        #self.add_trait(name, _clone_trait(self.model.trait(name)))
-
-        from openmdao.main.api import VariableTree
 
         ################ not really right since I will be adding root_names twice
         if isinstance( self.model.get(root_name), VariableTree):
-            #a = getattr(self.model, name)
             a = self.model.get(root_name)
             old_parent = a.parent
             a.parent = None
-            import copy
-            a_copy = copy.deepcopy( a )
+            a_copy = deepcopy( a )
             a.parent = old_parent
             a_copy.parent = self
-            #setattr(self, name, a_copy )
             self.set( root_name, a_copy )
         else:
             setattr(self, name, getattr(self.model, name))
@@ -551,25 +503,7 @@ class MetaModel(Component):
     def _add_output(self, name):
         """Adds the specified output variable and its associated surrogate Slot."""
 
-        #import pdb; pdb.set_trace()
-        print "in _add_output, name =", name
-        
-        #sur_name = __surrogate_prefix__+name
-        # sur_name = __surrogate_prefix__ + name.replace(".","__")
-        
-        # self.add_trait(sur_name, Slot(ISurrogate, allow_none=True))
-        # self.on_trait_change(self._surrogate_updated, sur_name)
-        #self.surrogates[name] = Slot(ISurrogate, allow_none=True)
-
         self.surrogates[name] = None
-        
-        #self.surrogates[name] = None
-        #self.on_trait_change(self._surrogate_updated, "surrogates:" + name)
-
-        print "***********setting on_trait_changed"
-        #self.on_trait_change(self._surrogate_updated, "surrogates.+")
-
-
         if self.default_surrogate is not None:
             surrogate = deepcopy(self.default_surrogate)
             self._default_surrogate_copies[name] = surrogate
@@ -583,14 +517,12 @@ class MetaModel(Component):
         """Removes the specified input variable."""
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
-        #import pdb; pdb.set_trace()
         # walk down the path to the left and remove that trait
         subnames = name.split('.')
         obj = self
         for subname in subnames[:-1]:
             obj = getattr(obj, subname)
         obj.remove_trait( subnames[-1] )
-        #self.remove_trait(name)
     
     def _remove_output(self, name):
         """Removes the specified output variable and its associated surrogate."""
@@ -603,8 +535,6 @@ class MetaModel(Component):
         for subname in subnames[:-1]:
             obj = getattr(obj, subname)
         obj.remove_trait( subnames[-1] )
-        #self.remove_trait(name)
-        #self.remove_trait(__surrogate_prefix__+name.replace(".","__"))
         del self.surrogates[ name ]
         if name in self._training_data:
             del self._training_data[name]
@@ -614,9 +544,6 @@ class MetaModel(Component):
         to model inputs.
         """
 
-        #import pdb; pdb.set_trace()
-        from openmdao.main.api import VariableTree
-        
         if self._surrogate_input_names is None:
             if self.model:
                 self._surrogate_input_names = []
@@ -625,16 +552,10 @@ class MetaModel(Component):
                         if self._eligible(name) and name not in self._mm_class_traitnames :
                             self._surrogate_input_names.append( name )
                     else :
-                        #self._surrogate_input_names.append( name )
-                        from openmdao.main.case import flatteners
                         subnames = [ subvar[0] for subvar in flatteners[VariableTree]( name, self.model.get(name) ) ]
                         for subname in subnames:
                             if self._eligible(subname) and name not in self._mm_class_traitnames :
                                 self._surrogate_input_names.append( subname )
-                            
-                # self._surrogate_input_names = [n for n in self.model._alltraits(iotype='in').keys()
-                #                                if self._eligible(n) and 
-                #                                   n not in self._mm_class_traitnames]
             else:
                 return []
         return self._surrogate_input_names
@@ -643,7 +564,6 @@ class MetaModel(Component):
         """Return the list of names of public outputs that correspond
         to model outputs.
         """
-        from openmdao.main.api import VariableTree
         if self._surrogate_output_names is None:
             if self.model:
                 self._surrogate_output_names = []
@@ -652,26 +572,17 @@ class MetaModel(Component):
                         if self._eligible(name) and name not in self._mm_class_traitnames :
                             self._surrogate_output_names.append( name )
                     else :
-                        #self._surrogate_input_names.append( name )
-                        from openmdao.main.case import flatteners
                         subnames = [ subvar[0] for subvar in flatteners[VariableTree]( name, self.model.get(name) ) ]
                         for subname in subnames:
                             if self._eligible(subname) and name not in self._mm_class_traitnames :
                                 self._surrogate_output_names.append( subname )
-                # self._surrogate_output_names = [n for n in self.model._alltraits(iotype='out').keys() 
-                #                                if self._eligible(n) and 
-                #                                   n not in self._mm_class_traitnames]
             else:
                 return []
-
-        print "returning from surrogate_output_names", self._surrogate_output_names
 
         return self._surrogate_output_names
 
     def _update_surrogate_list(self):
         
-        #import pdb; pdb.set_trace() # qqq
-
         old_in = set()
         if self._surrogate_input_names is not None:
             old_in.update(self._surrogate_input_names)
@@ -714,9 +625,6 @@ class MetaModel(Component):
         self.config_changed()
 
     def _default_surrogate_changed(self, old_obj, new_obj):
-        #import pdb; pdb.set_trace()
-
-        print "default surrogate changed"
 
         if old_obj:
             old_obj.on_trait_change(self._def_surrogate_trait_modified, 
@@ -728,13 +636,9 @@ class MetaModel(Component):
             #  before it adds the new one. So you actually get this method called 
             #  twice on a replace. You only do this update when the new one gets set
 
-            #import pdb; pdb.set_trace()
             for name in self.surrogate_output_names():
-                #surname = __surrogate_prefix__+name.replace(".","__")
-                #if surname not in self._surrogate_overrides:
                 if name not in self._surrogate_overrides:
                     surrogate = deepcopy(self.default_surrogate)
-                    #self._default_surrogate_copies[surname] = surrogate
                     self._default_surrogate_copies[name] = surrogate
                     self._add_var_for_surrogate(surrogate, name)
                 
@@ -743,8 +647,6 @@ class MetaModel(Component):
     def _def_surrogate_trait_modified(self, surrogate, name, old, new):
         # a trait inside of the default_surrogate was changed, so we need to
         # replace all of the default copies
-
-        print "_def_surrogate_trait_modified"
 
         for name in self._default_surrogate_copies:
             self._default_surrogate_copies[name] = deepcopy(self.default_surrogate)
