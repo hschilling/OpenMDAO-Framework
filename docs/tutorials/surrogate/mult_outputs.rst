@@ -91,11 +91,6 @@ stage so that comparative values may be generated.
 
 
 In printing the information we have now included all four of the outputs. 
-For the Kriging Surrogate model, the answer returned as a normal distribution 
-(Kriging Surrogate predicts both a mean and a standard deviation for a given input).
-When comparing the data, we just look at the mean here.  This is why there is a ``.mu`` appended to the 
-cos case under ``predicted_cos``.  An 
-alternative would be to append ``.sigma`` which would return the standard deviation.
         
 .. testcode:: Mult_out_parts
 
@@ -109,12 +104,12 @@ alternative would be to append ``.sigma`` which would return the standard deviat
         validate_data = sim.DOE_Validate.recorders[0].get_iterator()
         train_inputs = [case['trig_meta_model.x'] for case in train_data]
         train_actual_sin = [case['trig_meta_model.f_x_sin'] for case in train_data]
-        train_actual_cos = [case['trig_meta_model.f_x_cos'].mu for case in train_data]
+        train_actual_cos = [case['trig_meta_model.f_x_cos'] for case in train_data]
         inputs = [case['trig_calc.x'] for case in validate_data]    
         actual_sin = [case['trig_calc.f_x_sin'] for case in validate_data]
         actual_cos = [case['trig_calc.f_x_cos'] for case in validate_data]
         predicted_sin = [case['trig_meta_model.f_x_sin'] for case in validate_data]
-        predicted_cos = [case['trig_meta_model.f_x_cos'].mu for case in validate_data]
+        predicted_cos = [case['trig_meta_model.f_x_cos'] for case in validate_data]
     
         
         for a,b,c,d in zip(actual_sin,predicted_sin,actual_cos,predicted_cos):

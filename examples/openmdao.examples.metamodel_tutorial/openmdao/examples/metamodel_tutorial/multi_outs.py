@@ -69,12 +69,12 @@ if __name__ == "__main__":
     validate_data = sim.DOE_Validate.recorders[0].get_iterator()
     train_inputs = [case['trig_meta_model.x'] for case in train_data]
     train_actual_sin = [case['trig_meta_model.f_x_sin'] for case in train_data]
-    train_actual_cos = [case['trig_meta_model.f_x_cos'].mu for case in train_data]
+    train_actual_cos = [case['trig_meta_model.f_x_cos'] for case in train_data]
     inputs = [case['trig_calc.x'] for case in validate_data]    
     actual_sin = [case['trig_calc.f_x_sin'] for case in validate_data]
     actual_cos = [case['trig_calc.f_x_cos'] for case in validate_data]
     predicted_sin = [case['trig_meta_model.f_x_sin'] for case in validate_data]
-    predicted_cos = [case['trig_meta_model.f_x_cos'].mu for case in validate_data]
+    predicted_cos = [case['trig_meta_model.f_x_cos'] for case in validate_data]
     
     
     
