@@ -42,7 +42,6 @@ from openmdao.util.typegroups import int_types, real_types
 _missing = object()
 
 
-
 def copy_modelvar_to_metamodel( surrogate, model_node, varname, metamodel_node ):
     '''This function created to handle vartrees. Need to recursively
        copy vars from the model to the metamodel. But if the leaf var is
@@ -404,7 +403,6 @@ class MetaModel(Component):
                                               units=model_node.trait(subname).units))
                 setattr(metamodel_node, subname, val)
             else: # a vartree
-        
 
                 vartree = model_node.get(subname)
                 # need to copy/clone the vartree and add to the metamodel
@@ -434,9 +432,7 @@ class MetaModel(Component):
             else:
                 self._surrogate_overrides.add(varname)
                 self._add_var_for_surrogate(self.surrogates[varname], varname)
-                ###### TODO: not sure how to handle this since I do not
-                #             know if I have access to the old value
-                if old is None and name in self._default_surrogate_copies:
+                if name in self._default_surrogate_copies:
                     del self._default_surrogate_copies[name]
     
         self.config_changed()
@@ -488,7 +484,6 @@ class MetaModel(Component):
         if not self.get_trait( root_name ):
             self.add_trait(root_name, _clone_trait(self.model.trait(root_name)))
 
-        ################ not really right since I will be adding root_names twice
         if isinstance( self.model.get(root_name), VariableTree):
             a = self.model.get(root_name)
             old_parent = a.parent
@@ -517,7 +512,7 @@ class MetaModel(Component):
         """Removes the specified input variable."""
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
-        # walk down the path to the left and remove that trait
+        # walk down the path to the leaf and remove that trait
         subnames = name.split('.')
         obj = self
         for subname in subnames[:-1]:
@@ -529,7 +524,7 @@ class MetaModel(Component):
 
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
-        # walk down the path to the left and remove that trait
+        # walk down the path to the leaf and remove that trait
         subnames = name.split('.')
         obj = self
         for subname in subnames[:-1]:
@@ -632,7 +627,7 @@ class MetaModel(Component):
         if new_obj:
             new_obj.on_trait_change(self._def_surrogate_trait_modified)
             
-            #due to the way "add" works, container will always remove the old 
+            # due to the way "add" works, container will always remove the old 
             #  before it adds the new one. So you actually get this method called 
             #  twice on a replace. You only do this update when the new one gets set
 
