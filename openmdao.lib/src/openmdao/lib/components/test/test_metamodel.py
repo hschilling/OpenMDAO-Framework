@@ -288,13 +288,9 @@ class MetaModelTestCase(unittest.TestCase):
         self.assertTrue('b' in meta_asm.metamodel.list_inputs())
         self.assertTrue(meta_asm.metamodel.surrogates.has_key( 'c'))
         self.assertTrue(meta_asm.metamodel.surrogates.has_key( 'd'))
-        # self.assertTrue(hasattr(meta_asm.metamodel, 'sur_c'))
-        # self.assertTrue(hasattr(meta_asm.metamodel, 'sur_d'))
         meta_asm.metamodel.excludes = ['d']
         self.assertTrue(meta_asm.metamodel.surrogates.has_key( 'c'))
         self.assertTrue(not meta_asm.metamodel.surrogates.has_key( 'd'))
-        # self.assertTrue(hasattr(meta_asm.metamodel, 'sur_c'))
-        # self.assertTrue(not hasattr(meta_asm.metamodel, 'sur_d'))
         
         
     def test_comp_error(self): 
@@ -458,7 +454,6 @@ class MetaModelTestCase(unittest.TestCase):
         simple.run()
         metamodel.run()
         
-        #import pdb; pdb.set_trace()
         self.assertEqual(metamodel.c.getvalue(), 3.)
         self.assertEqual(metamodel.d.getvalue(), -1.)
         self.assertEqual(metamodel.c.getvalue(), simple.c)
@@ -470,7 +465,6 @@ class MetaModelTestCase(unittest.TestCase):
         metamodel.model = Simple()
         metamodel.surrogates[ 'd' ] = KrigingSurrogate()
         try:
-            #import pdb; pdb.set_trace()
             metamodel.run()
         except RuntimeError,err: 
             self.assertEqual("meta: No default surrogate model is defined and the following outputs do not have a surrogate model: ['c']. "
@@ -481,7 +475,6 @@ class MetaModelTestCase(unittest.TestCase):
             
         metamodel = MetaModel()
         metamodel.name = 'meta'
-        #metamodel.sur_d = KrigingSurrogate()
         metamodel.surrogates['d'] = KrigingSurrogate()
         metamodel.includes = ['a','b','d']
         try: 
@@ -496,8 +489,6 @@ class MetaModelTestCase(unittest.TestCase):
         metamodel.model = Simple()
         metamodel.surrogates['d'] = KrigingSurrogate()
         metamodel.surrogates['c'] = LogisticRegression()
-        # metamodel.sur_d = KrigingSurrogate()
-        # metamodel.sur_c = LogisticRegression()
         metamodel.recorder = DumbRecorder()
         simple = Simple()
         
@@ -513,7 +504,6 @@ class MetaModelTestCase(unittest.TestCase):
         simple.run()
         metamodel.run()
 
-        #import pdb; pdb.set_trace()
         self.assertTrue(isinstance(metamodel.d,NormalDistribution))
         self.assertTrue(isinstance(metamodel.c,float))
         
@@ -760,8 +750,8 @@ class TestMetaModelWithVtree(unittest.TestCase):
 
     def test_in_and_out_tree_multiple_surrogates(self):
         self.a.mm.model = InandOutTree()
-        self.a.mm.sur_outs_x = FloatKrigingSurrogate()
-        self.a.mm.sur_outs_y = FloatKrigingSurrogate()
+        self.a.mm.surrogates['outs.x']= FloatKrigingSurrogate()
+        self.a.mm.surrogates['outs.y'] = KrigingSurrogate()
         self._run_sweep(self.a, 'ins.a', 'ins.b', 'outs.x', 'outs.y')
 
     def test_includes_with_vartrees(self):

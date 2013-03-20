@@ -41,12 +41,24 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
                 figures[slot.name].setState(slot.filled);
             }
             else {
-                // create a new slot figure
-                var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name, slot),
+                if ( slot.containertype === 'dict' ) {
+                    // create a new slot figure
+                    jQuery.each( slot.filled, function( idx, sur_name ) {
+                        var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name+"."+sur_name, slot),
+                        figMenu = fig.getContextMenu();
+                        figures[slot.name+"."+sur_name] = fig;
+                        slotsDiv.append(fig);
+                        ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
+                    } ) ;
+                }
+                else {
+                    // create a new slot figure
+                    var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name, slot),
                     figMenu = fig.getContextMenu();
-                figures[slot.name] = fig;
-                slotsDiv.append(fig);
-                ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
+                    figures[slot.name] = fig;
+                    slotsDiv.append(fig);
+                    ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
+                }
             }
         });
     }

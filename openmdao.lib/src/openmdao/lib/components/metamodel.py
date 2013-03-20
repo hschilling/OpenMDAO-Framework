@@ -99,7 +99,7 @@ class MetaModel(Component):
     
     surrogates = Dict(key_trait=Str, 
                       value_trait=Slot(ISurrogate), 
-                      iotype='in', desc='surrogates for output variables')
+                      desc='surrogates for output variables')
 
 
     report_errors = Bool(True, iotype="in",

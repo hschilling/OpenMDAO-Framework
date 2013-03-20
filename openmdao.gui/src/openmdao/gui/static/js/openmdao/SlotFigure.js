@@ -23,15 +23,27 @@ openmdao.SlotFigure=function(model,pathname,slot) {
         rbrkSVG = '<svg height="60" width="20">'
                 + '    <text x="0" y="45" font-size="60" style="fill:gray">]</text>'
                 + '</svg>',
-        fig = slot.containertype === 'singleton' ?
-                jQuery(slotDiv).append(slotSVG) :
-                jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG),
+        // fig = slot.containertype === 'singleton' ?
+        //         jQuery(slotDiv).append(slotSVG) :
+        //         jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG),
         filledRectCSS = {'stroke-width':4, 'stroke-dasharray':'none', 'stroke':'#0b93d5', 'fill': 'gray'},
         filledTextCSS = {'fill': 'black'},
         unfilledRectCSS = {'stroke-width':2, 'stroke-dasharray':8, 'stroke':'gray', 'fill': 'none'},
         unfilledTextCSS = {'fill': 'gray'},
         contextMenu = jQuery("<ul id="+id+"-menu class='context-menu'>")
             .appendTo(fig);
+
+    var fig ; // qqq
+        if ( slot.containertype === 'singleton' ){
+            fig = jQuery(slotDiv).append(slotSVG) ;
+        }
+        else if ( slot.containertype === 'list' ){
+            fig = jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG) ;
+        }
+        else if ( slot.containertype === 'dict' ){
+            fig = jQuery(slotDiv).append(slotSVG) ;
+        }
+
 
     // set name, id, tooltip and width
     fig.find('#name').text(slot.name);
