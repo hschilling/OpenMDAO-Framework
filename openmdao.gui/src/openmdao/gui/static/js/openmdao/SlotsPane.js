@@ -41,35 +41,59 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
                 figures[slot.name].setState(slot.filled);
             }
             else {
-                // if ( slot.containertype === 'dict' ) {
-                //     // create a new slot figure for each item in the dict
-                //     // Need to build a new slot object for the specific
-                //     //  surrogate
+                if ( slot.containertype === 'dict' ) {
+                    // create a new slot figure for each item in the dict
+                    // Need to build a new slot object for the specific
+                    //  item in the dict
+                    
+                    var lbraceSVG = '<svg height="60" width="35">'
+                        + '    <text x="0" y="45" font-size="60" style="fill:gray">{</text>'
+                        + '</svg>',
+                    commSVG = '<svg height="60" width="20">'
+                        + '    <text x="0" y="45" font-size="60" style="fill:gray">,</text>'
+                        + '</svg>',
+                        rbraceSVG = '<svg height="60" width="30">' 
+                        + '    <text x="0" y="45" font-size="60" style="fill:gray">}</text>'
+                        + '</svg>' ;
+                    var slotDictDiv = '<div style="margin:10px; clear:both;" />';
+                    var qqq = false ;
 
-                //     jQuery.each( slot.filled, function( idx, sur_name ) {
-                //         var sur_slot = {
-                //             containertype: "singleton",
-                //             desc: "surrogate for output " + sur_name,
-                //             filled: null,
-                //             klass: "ISurrogate",
-                //             name: sur_name
-                //         };
-                //         var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name+"."+sur_name, 
-                //                                       sur_slot),
-                //         figMenu = fig.getContextMenu();
-                //         figures[sur_slot.name+"."+sur_name] = fig;
-                //         slotsDiv.append(fig);
-                //         ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
-                //     } ) ;
-                // }
-                // else {
+                    slotsDiv.append(slotDictDiv);
+                    slotsDiv.append(lbraceSVG);
+                    jQuery.each( slot.filled, function( idx, slot_in_dict_info ) {
+                        var dict_key = slot_in_dict_info[ "py/tuple" ][0] ;
+                        var dict_value = slot_in_dict_info[ "py/tuple" ][1] ;
+                        if ( dict_value ) {
+                            dict_value = dict_value[ "py/object" ] ;
+                        }
+                        var slot_in_dict = {
+                            containertype: "singleton",
+                            desc: slot.desc + " for " + dict_key,
+                            filled: dict_value,
+                            klass: "ISurrogate",
+                            name: dict_key
+                        };
+                        var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name+"." + dict_key, 
+                                                      slot_in_dict, true ),
+                        figMenu = fig.getContextMenu();
+                        figures[slot.name+"."+dict_key] = fig;
+                        slotsDiv.append(fig);
+                        if ( idx < slot.filled.length - 1 ) {
+                            slotsDiv.append(commSVG);
+                        }
+                        ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
+                    } ) ;
+                    slotsDiv.append(rbraceSVG);
+                    //slotsDiv.append('</div>');
+                }
+                else {
                     // create a new slot figure
-                    var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name, slot),
+                    var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name, slot, false),
                     figMenu = fig.getContextMenu();
                     figures[slot.name] = fig;
                     slotsDiv.append(fig);
                     ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
-                //}
+                }
             }
         });
     }
