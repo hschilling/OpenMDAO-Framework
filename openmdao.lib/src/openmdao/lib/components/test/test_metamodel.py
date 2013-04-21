@@ -441,7 +441,10 @@ class MetaModelTestCase(unittest.TestCase):
         metamodel.model = Simple()
         metamodel.recorder = DumbRecorder()
         simple = Simple()
-        
+
+
+        #import pdb; pdb.set_trace()
+
         metamodel.a = simple.a = 1.
         metamodel.b = simple.b = 2.
         metamodel.train_next = True
@@ -677,7 +680,9 @@ class TestMetaModelWithVtree(unittest.TestCase):
                 asmb.mm.set(a_name, a)
                 asmb.mm.set(b_name, b)  
 
+        #import pdb; pdb.set_trace()
         asmb.mm.train_next = True
+        
         set_ab(1, 2)
         asmb.run()  
         x = asmb.mm.get(x_name)
@@ -756,38 +761,53 @@ class TestMetaModelWithVtree(unittest.TestCase):
 
     def test_includes_with_vartrees(self):
         self.a.mm.default_surrogate = KrigingSurrogate()
-        self.a.mm.includes = ['ins.a', 'outs.y']
+        self.a.mm.includes = ['ins']
         self.a.mm.model = InandOutTree()
-        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a'])
-        self.assertEqual(self.a.mm.surrogate_output_names(), ['outs.y'])
+        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a', 'ins.b'])
+        self.assertEqual(self.a.mm.surrogate_output_names(), [])
         
         # now try changing the includes
-        self.a.mm.includes = ['ins.b', 'outs.x']
-        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.b'])
-        self.assertEqual(self.a.mm.surrogate_output_names(), ['outs.x'])
+        self.a.mm.includes = ['ins', 'outs']
+        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a','ins.b'])
+        self.assertEqual(self.a.mm.surrogate_output_names(), ['outs.y', 'outs.x'])
 
     def test_excludes_with_vartrees(self):
         self.a.mm.default_surrogate = KrigingSurrogate()
         self.a.mm.model = InandOutTree()
-        self.a.mm.excludes = ['ins.b', 'outs.y']
-        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a'])
-        self.assertEqual(self.a.mm.surrogate_output_names(), ['outs.x'])
+        #import pdb; pdb.set_trace()
+        self.a.mm.excludes = [ 'ins', 'outs']
+        #import pdb; pdb.set_trace()
+        #self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a', 'ins.b'])
+        #self.assertEqual(self.a.mm.surrogate_output_names(), [])
         
         # now try changing the excludes
-        self.a.mm.excludes = ['ins.a', 'outs.x']
-        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.b'])
-        self.assertEqual(self.a.mm.surrogate_output_names(), ['outs.y'])
+        #import pdb; pdb.set_trace()
+        self.a.mm.excludes = ['outs']
+        self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a', 'ins.b'])
+        self.assertEqual(self.a.mm.surrogate_output_names(), [])
 
     def test_include_exclude_with_vartrees(self):
         self.a.mm.model = InandOutTree()
         self.a.mm.default_surrogate = KrigingSurrogate()
-        self.a.mm.includes = ['ins.a','outs.y']
-        self.a.mm.excludes = ['ins.b','outs.x']
+        self.a.mm.includes = ['ins']
+        self.a.mm.excludes = ['outs']
         try:
             self.a.mm.run()
         except Exception as err:
             self.assertEqual(str(err), 
                              'mm: includes and excludes are mutually exclusive')
+        else:
+            self.fail('Expected Exception')
+
+    def qqq_test_exclude_vartree_leaf(self):
+        # Should not be allowed in this simplified
+        self.a.mm.model = InandOutTree()
+        self.a.mm.default_surrogate = KrigingSurrogate()
+        try:
+            self.a.mm.includes = ['ins.a','outs.y']
+        except Exception as err:
+            self.assertEqual(str(err), 
+                             'mm: Can only include top level variable trees, not leaves')
         else:
             self.fail('Expected Exception')
 

@@ -580,9 +580,6 @@ class Component(Container):
 
         Returns the added Container object.
         """
-        if has_interface(obj, IDriver) and not has_interface(self, IAssembly):
-            raise Exception("A Driver may only be added to an Assembly")
-
         self.config_changed()
         super(Component, self).add(name, obj)
         if is_instance(obj, Container) and not is_instance(obj, Component):
@@ -598,22 +595,6 @@ class Component(Container):
             self._depgraph.remove(name)
         self.config_changed()
         return obj
-
-    def replace(self, target_name, newobj):
-        """Replace one object with another, attempting to mimic the replaced
-        object as much as possible.
-        """
-        tobj = getattr(self, target_name)
-
-        if hasattr(newobj, 'mimic'):
-            try:
-                newobj.mimic(tobj)  # this should copy inputs, delegates and set name
-            except Exception:
-                self.reraise_exception("Couldn't replace '%s' of type %s with type %s"
-                                       % (target_name, type(tobj).__name__,
-                                          type(newobj).__name__))
-
-        self.add(target_name, newobj)  # this will remove the old object
 
     def add_trait(self, name, trait):
         """Overrides base definition of *add_trait* in order to

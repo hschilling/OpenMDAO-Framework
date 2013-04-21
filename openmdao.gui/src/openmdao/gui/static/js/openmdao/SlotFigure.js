@@ -123,6 +123,7 @@ openmdao.SlotFigure=function(model,pathname,slot,isdict) {
 
     //var isdict_copy = false ;
 
+    // qqq
 
     var fig ; // qqq
         if ( slot.containertype === 'singleton' ){
@@ -144,6 +145,22 @@ openmdao.SlotFigure=function(model,pathname,slot,isdict) {
     fig.find('#name').text(slot.name);
     fig.attr('id',id);
     fig.attr('title',slot.desc);
+
+    // fig.hover(
+    //     function(){
+    //         jQuery(this).tooltip({ content: "qqq" , 
+
+    //                                position : {
+    //                                    my : "right top",
+    //                                    at : "left-20 top",
+    //                                },
+
+
+    //                              });
+    //     }
+    // );
+
+    fig.tooltip({ content: "Awesome title!" });
 
 
     var contextMenu = jQuery("<ul id="+id+"-menu class='context-menu'>").appendTo(fig);

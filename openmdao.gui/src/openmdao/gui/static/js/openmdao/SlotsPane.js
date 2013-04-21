@@ -56,7 +56,6 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
                         + '    <text x="0" y="45" font-size="60" style="fill:gray">}</text>'
                         + '</svg>' ;
                     var slotDictDiv = '<div style="margin:10px; clear:both;" />';
-                    var qqq = false ;
 
                     slotsDiv.append(slotDictDiv);
                     slotsDiv.append(lbraceSVG);
@@ -76,10 +75,42 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
                         var fig = openmdao.SlotFigure(model, pathname+'.'+slot.name+"." + dict_key, 
                                                       slot_in_dict, true ),
                         figMenu = fig.getContextMenu();
+
+                        var options = {} ;
+
                         figures[slot.name+"."+dict_key] = fig;
+
+
                         slotsDiv.append(fig);
+
+
+                        // It is only at this point where we can get at the
+                        // size of the text in the slots so that the 
+                        // bounding oval can be resized
+                        var name_text = fig.find( '#name' )[0] ;
+                        var klass_text = fig.find( '#klass' )[0] ;
+                        var name_width = name_text.getBBox().width ;
+                        var klass_width = klass_text.getBBox().width ;
+                        var rect_width = Math.max( name_width, klass_width ) ;
+                        var svg = fig.find( "svg" )[0] ;
+                        var rect = fig.find( "rect" )[0] ;
+                        svg.setAttribute( "width", rect_width + 40 ) ;
+                        rect.setAttribute( "width", rect_width + 40 ) ;
+                        name_text.setAttribute( "x", ( rect_width + 40 ) / 2 ) ;
+                        klass_text.setAttribute( "x", ( rect_width + 40 ) / 2 ) ;
+                        fig.width( rect_width + 45 ) ;
+
                         if ( idx < slot.filled.length - 1 ) {
                             slotsDiv.append(commSVG);
+                            // var comma = fig.next()
+                            // options = {
+                            //     "my": "center left",
+                            //     "at": "center right",
+                            //     "of": "#" + fig.attr('id')
+                            // };
+                            // comma.position(options);
+
+
                         }
                         ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
                     } ) ;
@@ -92,6 +123,20 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
                     figMenu = fig.getContextMenu();
                     figures[slot.name] = fig;
                     slotsDiv.append(fig);
+                    // It is only at this point where we can get at the
+                    // size of the text in the slots so that the 
+                    // bounding oval can be resized
+                    var name_text = fig.find( '#name' )[0] ;
+                    var klass_text = fig.find( '#klass' )[0] ;
+                    var name_width = name_text.getBBox().width ;
+                    var klass_width = klass_text.getBBox().width ;
+                    var rect_width = Math.max( name_width, klass_width ) ;
+                    var svg = fig.find( "svg" )[0] ;
+                    var rect = fig.find( "rect" )[0] ;
+                    svg.setAttribute( "width", rect_width + 40 ) ;
+                    rect.setAttribute( "width", rect_width + 40 ) ;
+                    name_text.setAttribute( "x", ( rect_width + 40 ) / 2 ) ;
+                    klass_text.setAttribute( "x", ( rect_width + 40 ) / 2 ) ;
                     ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
                 }
             }

@@ -4,6 +4,7 @@ Tests of overall workspace functions.
 
 import pkg_resources
 import time
+import tempfile
 
 from nose.tools import eq_ as eq
 from nose.tools import with_setup
@@ -30,9 +31,57 @@ def test_generator():
 def _test_dict_slot(browser):
     project_dict, workspace_page = startup(browser)
 
-    fileqqq_path = pkg_resources.resource_filename('openmdao.main.test',
-                                                 'test_vartree.py')
-    workspace_page.add_file(fileqqq_path)
+    #### load in some files needed for the tests ####
+    # write out a file to be loaded in with some vartrees
+    vartree_temp = tempfile.NamedTemporaryFile(suffix=".py", delete=False)
+    print >> vartree_temp, """
+from openmdao.main.api import VariableTree, Component
+from openmdao.main.datatypes.api import Float, Slot
+class InVtree(VariableTree): 
+    a = Float(iotype='in')
+    b = Float(iotype='in')
+
+
+class OutVtree(VariableTree): 
+    x = Float(iotype='out', desc='horizontal distance', units='ft')
+    y = Float(iotype='out', desc='vertical distance', units='ft')    
+
+
+class InTreeOnly(Component): 
+
+    ins = Slot(InVtree, iotype='in')
+
+    x = Float(iotype='out')
+    y = Float(iotype='out') 
+
+    def __init__(self): 
+        super(InTreeOnly, self).__init__()
+        self.ins = InVtree()
+
+    def execute(self): 
+        self.x = 2*self.ins.a
+        self.y = 2*self.ins.a+self.ins.b
+
+
+class InandOutTree(Component): 
+
+    ins = Slot(InVtree, iotype='in')
+
+    outs = Slot(OutVtree, iotype='out')
+
+    def __init__(self): 
+        super(InandOutTree, self).__init__()
+        self.ins = InVtree()
+        self.outs = OutVtree()
+
+    def execute(self): 
+
+        self.outs.x = 2*self.ins.a
+        self.outs.y = 2*self.ins.a+self.ins.b
+"""
+    vartree_temp.close()
+    workspace_page.add_file(vartree_temp.name)
+
     file1_path = pkg_resources.resource_filename('openmdao.examples.simple',
                                                  'paraboloid.py')
     workspace_page.add_file(file1_path)
@@ -58,7 +107,7 @@ def _test_dict_slot(browser):
     # Fill the model slot
     model_slot.fill_from_library('Paraboloid')
 
-    # Should be on surrogates slot in the dict
+    # Should be one surrogates slot in the dict
     time.sleep(1.0)  # give it a bit to update the figure
     surrogates = browser.find_elements_by_xpath("//div[starts-with( @id,'SlotFigure-top-mm-surrogates')]")
     eq( 1, len( surrogates),
@@ -120,8 +169,8 @@ def _test_dict_slot(browser):
     eq(2, num_surrogates_filled,
        "Exactly two surrogate slot should be filled but %d are filled" % num_surrogates_filled)
 
-    # Fill the model slot
-    model_slot.fill_from_library('SimpleComp')
+    # Need to test with vartrees
+    #model_slot.fill_from_library('SimpleComp')
 
     time.sleep(5.5)  # give it a bit to update the figure
 
@@ -162,7 +211,19 @@ def _test_dict_slot(browser):
 
 
     # test vartree with metamodel ##############################
+    model_slot.fill_from_library('InandOutTree')
 
+
+    # There should two surrogates slots
+    time.sleep(1.0)  # give it a bit to update the figure
+    surrogates = browser.find_elements_by_xpath("//div[starts-with( @id,'SlotFigure-top-mm-surrogates')]")
+    eq( 2, len( surrogates),
+        "There should be two surrogates in the surrogates dict but %d surrogate(s) are being displayed" % len( surrogates ) )
+
+    # They should all be empty: RPM and torque_ratio
+    for surrogate in surrogates :
+        eq(False, ("filled" in surrogate.get_attribute('class')), "Surrogate should not be filled")
+    
 
     # Clean up.
     closeout(project_dict, workspace_page)

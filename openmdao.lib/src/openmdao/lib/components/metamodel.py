@@ -73,6 +73,16 @@ def copy_modelvar_to_metamodel( surrogate, model_node, varname, metamodel_node )
             copy_modelvar_to_metamodel( surrogate, vartree, subvarname, vartree_copy )
     return
 
+def check_model_only_one_level_vartree( model_node ):
+    for model_varname in model_node.list_vars():
+        if isinstance( model_node.get(model_varname), VariableTree):
+            vartree = model_node.get(model_varname)
+            for varname in vartree.list_vars():
+                if isinstance( vartree.get(varname), VariableTree):
+                    return False
+    return True
+
+
 class MetaModel(Component):
 
     # pylint: disable-msg=E1101
@@ -239,6 +249,9 @@ class MetaModel(Component):
         predict outputs.
         """
 
+        #import pdb; pdb.set_trace()
+
+        
         if self._train:
             try:
                 inputs = self.update_model_inputs()
@@ -336,6 +349,9 @@ class MetaModel(Component):
         of variables with iotype of out, this method needed to be written
         """
         # get the leaf object
+
+        #import pdb; pdb.set_trace()
+
         names = path.split('.')
         obj = self
         for name in names[:-1]:
@@ -365,11 +381,18 @@ class MetaModel(Component):
         # TODO: check for nested MMs?  Is this a problem?
         # TODO: check for name collisions between MetaModel class traits and traits from model
 
+        #import pdb; pdb.set_trace()
+
         if newmodel is not None and not has_interface(newmodel, IComponent):
             self.raise_exception('model of type %s does not implement the IComponent interface' % type(newmodel).__name__,
                                  TypeError)
 
         self.reset_training_data = True
+
+        if newmodel:
+            if not check_model_only_one_level_vartree( newmodel ):
+                self.raise_exception('metamodels currently do not support multi level vartrees',
+                                     TypeError)
 
         self._update_surrogate_list()
         
@@ -384,34 +407,47 @@ class MetaModel(Component):
         the appropriate type of output Variable based on the return value
         of get_uncertain_value on the surrogate.
         """
-        model_node = self.model
-        metamodel_node = self
-        for subname in varname.split("."):
-            if not isinstance( model_node.get(subname), VariableTree):
-                val = surrogate.get_uncertain_value(model_node.get(subname))
-                if has_interface(val, IUncertainVariable):
-                    ttype = UncertainDistVar
-                elif isinstance(val, real_types):
-                    ttype = Float
-                elif isinstance(val, int_types):
-                    ttype = Int
-                else:
-                    self.raise_exception("value type of '%s' is not a supported surrogate return value" %
-                                     val.__class__.__name__)
-                metamodel_node.add(subname, ttype(default_value=val, iotype='out', 
-                                              desc=model_node.trait(subname).desc,
-                                              units=model_node.trait(subname).units))
-                setattr(metamodel_node, subname, val)
-            else: # a vartree
 
-                vartree = model_node.get(subname)
-                # need to copy/clone the vartree and add to the metamodel
-                # First check to see if metamodel already has a copy.
-                if not hasattr(metamodel_node, subname):
-                    vartree_copy = copy( vartree )
-                    metamodel_node.add(subname,vartree_copy)
-                model_node = vartree
-                metamodel_node = getattr( metamodel_node, subname )
+        #import pdb; pdb.set_trace()
+
+        if "." not in varname : # non vartree variable
+            val = surrogate.get_uncertain_value(getattr(self.model, varname))
+            if has_interface(val, IUncertainVariable):
+                ttype = UncertainDistVar
+            elif isinstance(val, real_types):
+                ttype = Float
+            elif isinstance(val, int_types):
+                ttype = Int
+            else:
+                self.raise_exception("value type of '%s' is not a supported surrogate return value" %
+                                     val.__class__.__name__)
+            self.add(varname, ttype(default_value=val, iotype='out', 
+                                    desc=self.model.trait(varname).desc,
+                                    units=self.model.trait(varname).units))
+            setattr(self, varname, val)
+            
+        else: # vartree sub variable
+            vartreename = varname.split( "." )[0]
+            subvarname = varname.split( "." )[1]
+            
+            val = surrogate.get_uncertain_value(self.model.get( varname ) )
+            if has_interface(val, IUncertainVariable):
+                ttype = UncertainDistVar
+            elif isinstance(val, real_types):
+                ttype = Float
+            elif isinstance(val, int_types):
+                ttype = Int
+            else:
+                self.raise_exception("value type of '%s' is not a supported surrogate return value" %
+                                     val.__class__.__name__)
+            
+            metamodel_node = self
+            metamodel_vartree = metamodel_node.get( vartreename )
+            model_vartree_node = self.model.get( vartreename )
+            metamodel_vartree.add(subvarname, ttype(default_value=val, iotype='out', 
+                                    desc=model_vartree_node.trait(subvarname).desc,
+                                    units=model_vartree_node.trait(subvarname).units))
+            setattr(metamodel_vartree, subvarname, val)
 
         return
                 
@@ -461,11 +497,38 @@ class MetaModel(Component):
             surrogate = self._default_surrogate_copies.get(name)
 
         return surrogate
+
+
+
+
+    def update_outputs_from_model_old(self):
+        """Copy output values from the model into the MetaModel's outputs, and
+        if training, save the output associated with surrogate.
+        """
+        for name in self.surrogate_output_names():
+            out = getattr(self.model, name)
+            surrogate = self._get_surrogate(name)
+            if surrogate is None:
+                setattr(self, name, out)
+            else:
+                setattr(self, name, surrogate.get_uncertain_value(out))
+            if self._train:
+                self._training_data[name].append(out)  # save to training output history
+
+
+
+
+
+
+
     
     def update_outputs_from_model(self):
         """Copy output values from the model into the MetaModel's outputs, and
         if training, save the output associated with surrogate.
         """
+
+        #import pdb; pdb.set_trace()
+
         for name in self.surrogate_output_names():
 
             out = self.model.get(name)
@@ -474,82 +537,163 @@ class MetaModel(Component):
                 self._set_output(name,out)
             else:
                 self._set_output(name,surrogate.get_uncertain_value(out))
+                #setattr(self, name, surrogate.get_uncertain_value(out))
+
             if self._train:
                 self._training_data[name].append(out)  # save to training output history
 
     def _add_input(self, name):
         """Adds the specified input variable."""
 
-        root_name = name.partition(".")[0]
-        if not self.get_trait( root_name ):
-            self.add_trait(root_name, _clone_trait(self.model.trait(root_name)))
-
-        if isinstance( self.model.get(root_name), VariableTree):
-            a = self.model.get(root_name)
-            old_parent = a.parent
-            a.parent = None
-            a_copy = deepcopy( a )
-            a.parent = old_parent
-            a_copy.parent = self
-            self.set( root_name, a_copy )
-        else:
+        if "." not in name : # non vartree variable
+            self.add_trait(name, _clone_trait(self.model.trait(name)))
             setattr(self, name, getattr(self.model, name))
-    
+        else:
+            vartreename = name.split( "." )[0]
+            subvarname = name.split( "." )[1]
+
+            if not hasattr( self, vartreename ):
+                self.add_trait(vartreename, _clone_trait(self.model.trait(vartreename)))
+                setattr(self, vartreename, copy(getattr(self.model, vartreename)))
+
+            metamodel_node = self
+            metamodel_vartree_node = self.get( vartreename )
+            model_vartree_node = self.model.get( vartreename )
+            metamodel_vartree_node.add_trait(subvarname, _clone_trait(model_vartree_node.trait(subvarname)))
+            metamodel_vartree_node.set( subvarname, model_vartree_node.get(subvarname))
+
     def _add_output(self, name):
         """Adds the specified output variable and its associated surrogate Slot."""
+
+        #import pdb; pdb.set_trace()
+        
+        if "." not in name: # non vartree variable
+            self.surrogates[name] = None
+            if self.default_surrogate is not None:
+                surrogate = deepcopy(self.default_surrogate)
+                self._default_surrogate_copies[name] = surrogate
+                self._add_var_for_surrogate(surrogate, name)
+            else:
+                self.add_trait(name, _clone_trait(self.model.trait(name)))
+        else:
+            self.surrogates[name] = None
+            #self.add_trait(name, _clone_trait(self.model.trait(name)))
+            vartreename = name.split( "." )[0]
+            subvarname = name.split( "." )[1]
+            if not hasattr( self, vartreename ):
+                self.add_trait(vartreename, _clone_trait(self.model.trait(vartreename)))
+                setattr(self, vartreename, copy(getattr(self.model, vartreename)))
+            
+            if self.default_surrogate is not None:
+                surrogate = deepcopy(self.default_surrogate)
+                self._default_surrogate_copies[name] = surrogate
+                self._add_var_for_surrogate(surrogate, name)
+            else:
+    
+                metamodel_node = self
+                metamodel_vartree_node = self.get( vartreename )
+                model_vartree_node = self.model.get( vartreename )
+                metamodel_vartree_node.add_trait(subvarname, _clone_trait(model_vartree_node.trait(subvarname)))
+                
+        self._training_data[name] = [] 
+    
+    def _add_output_new(self, name):
+        """Adds the specified output variable and its associated surrogate Slot."""
+
+        #import pdb; pdb.set_trace()
 
         self.surrogates[name] = None
         if self.default_surrogate is not None:
             surrogate = deepcopy(self.default_surrogate)
             self._default_surrogate_copies[name] = surrogate
             self._add_var_for_surrogate(surrogate, name)
-        else:
+
+        if "." in name: # non vartree variable
             self.add_trait(name, _clone_trait(self.model.trait(name)))
+        else:
+            vartreename = name.split( "." )[0]
+            subvarname = name.split( "." )[1]
+
+            if not hasattr( self, vartreename ):
+                self.add_trait(vartreename, _clone_trait(self.model.trait(vartreename)))
+                setattr(self, vartreename, getattr(self.model, vartreename))
+
+            metamodel_node = self
+            metamodel_vartree_node = self.get( vartreename )
+            model_vartree_node = self.model.get( vartreename )
+            metamodel_vartree_node.add_trait(subvarname, _clone_trait(model_vartree_node.trait(subvarname)))
 
         self._training_data[name] = [] 
+
     
     def _remove_input(self, name):
-        """Removes the specified input variable."""
+        """Removes the specified input variable.
+        Assumes one level of vartree
+        """
+
+        #import pdb; pdb.set_trace()
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
-        # walk down the path to the leaf and remove that trait
-        subnames = name.split('.')
-        obj = self
-        for subname in subnames[:-1]:
-            obj = getattr(obj, subname)
-        obj.remove_trait( subnames[-1] )
+
+        if "." in name: # vartree
+            vartreename = name.split( "." )[0]
+            subvarname = name.split( "." )[1]
+            self.get( vartreename ).remove_trait( subvarname )
+        else:
+            self.remove_trait(name)
     
     def _remove_output(self, name):
-        """Removes the specified output variable and its associated surrogate."""
+        """Removes the specified output variable and its associated surrogate.
+        Assuming that there is only one level of vartrees and that users can only
+        exclude entire vartrees, not sub parts."""
 
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
-        # walk down the path to the leaf and remove that trait
-        subnames = name.split('.')
-        obj = self
-        for subname in subnames[:-1]:
-            obj = getattr(obj, subname)
-        obj.remove_trait( subnames[-1] )
-        del self.surrogates[ name ]
-        if name in self._training_data:
-            del self._training_data[name]
+
+
+        #import pdb; pdb.set_trace()
+
+        if "." in name: # vartree
+            del self.surrogates[ name ]
+            if name in self._training_data:
+                del self._training_data[name]
+
+            vartreename = name.split( "." )[0]
+            subvarname = name.split( "." )[1]
+            self.get( vartreename ).remove_trait( subvarname )
+
+        else:
+            del self.surrogates[ name ]
+            self.remove_trait( name )
+            if name in self._training_data:
+                del self._training_data[name]
     
     def surrogate_input_names(self):
         """Return the list of names of public inputs that correspond
         to model inputs.
         """
 
+        #import pdb; pdb.set_trace()
+
         if self._surrogate_input_names is None:
             if self.model:
                 self._surrogate_input_names = []
                 for name in self.model._alltraits(iotype='in').keys():
                     if not isinstance( self.model.get(name), VariableTree):
-                        if self._eligible(name) and name not in self._mm_class_traitnames :
+                        if self._eligible(name) and name not in self._mm_class_traitnames:
+                            t = type( self.model.get(name) )
+                            if t not in [ float, int ]:
+                                self.raise_exception("Metamodel only supports int and float inputs",
+                                                     RuntimeError)
                             self._surrogate_input_names.append( name )
                     else :
                         subnames = [ subvar[0] for subvar in flatteners[VariableTree]( name, self.model.get(name) ) ]
                         for subname in subnames:
                             if self._eligible(subname) and name not in self._mm_class_traitnames :
+                                t = type( self.model.get(subname) )
+                                if t not in [ float, int ]:
+                                    self.raise_exception("Metamodel only supports int and float inputs",
+                                                     RuntimeError)
                                 self._surrogate_input_names.append( subname )
             else:
                 return []
@@ -559,17 +703,28 @@ class MetaModel(Component):
         """Return the list of names of public outputs that correspond
         to model outputs.
         """
+
+        #import pdb; pdb.set_trace()
+        
         if self._surrogate_output_names is None:
             if self.model:
                 self._surrogate_output_names = []
                 for name in self.model._alltraits(iotype='out').keys():
                     if not isinstance( self.model.get(name), VariableTree):
                         if self._eligible(name) and name not in self._mm_class_traitnames :
+                            t = type( self.model.get(name) )
+                            if t not in [ float, int ]:
+                                self.raise_exception("Metamodel only supports int and float outputs",
+                                                     RuntimeError)
                             self._surrogate_output_names.append( name )
                     else :
                         subnames = [ subvar[0] for subvar in flatteners[VariableTree]( name, self.model.get(name) ) ]
                         for subname in subnames:
-                            if self._eligible(subname) and name not in self._mm_class_traitnames :
+                            if self._eligible(subname) and name not in self._mm_class_traitnames:
+                                t = type( self.model.get(subname) )
+                                if t not in [ float, int ]:
+                                    self.raise_exception("Metamodel only supports int and float outputs",
+                                                         RuntimeError)
                                 self._surrogate_output_names.append( subname )
             else:
                 return []
@@ -577,7 +732,7 @@ class MetaModel(Component):
         return self._surrogate_output_names
 
     def _update_surrogate_list(self):
-        
+
         old_in = set()
         if self._surrogate_input_names is not None:
             old_in.update(self._surrogate_input_names)
@@ -587,7 +742,8 @@ class MetaModel(Component):
             
         self._surrogate_input_names = None
         self._surrogate_output_names = None
-        
+
+        #import pdb; pdb.set_trace()
         new_in = set(self.surrogate_input_names())
         new_out = set(self.surrogate_output_names())
         
@@ -612,10 +768,20 @@ class MetaModel(Component):
             
         
     def _includes_changed(self, old, new):
+        for name in new:
+            if "." in name:
+                self.raise_exception("Can only include top level variable trees, not leaves",
+                                     RuntimeError)
         self._update_surrogate_list()
         self.config_changed()
 
     def _excludes_changed(self, old, new):
+
+        for name in new:
+            if "." in name:
+                self.raise_exception("Can only exclude top level variable trees, not leaves",
+                                     RuntimeError)
+        #import pdb; pdb.set_trace()
         self._update_surrogate_list()
         self.config_changed()
 
@@ -650,6 +816,11 @@ class MetaModel(Component):
         """Return True if the named trait is not excluded from the public interface based
         on the includes and excludes lists.
         """
+
+        # includes and excludes only are allowed at the top level of vartrees
+        if "." in name:
+            name = name.split(".")[0]
+
         if name in self._mm_class_traitnames:
             return False
         if self.includes and name not in self.includes:
