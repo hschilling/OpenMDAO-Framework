@@ -36,11 +36,12 @@ openmdao.PropertiesPane = function(elm,model,pathname,name,editable,meta) {
         propsDiv=jQuery("<div id='"+name+"_props' class='slickgrid' style='overflow:none; height:360px; width:620px;'>");
         columns = [
             { id:"info",  name:"",            field:"info",   width:30,  formatter:InfoFormatter },
-            { id:"name",  name:"Name",        field:"name",   width:100, formatter:VarTableFormatter },
+            { id:"name",  name:"Name",        field:"name",   width:100, formatter:VarTableFormatter, sortable:true },
             { id:"value", name:"Value",       field:"value",  width:100, editor:openmdao.ValueEditor },
             { id:"units", name:"Units",       field:"units",  width:60   },
             { id:"desc",  name:"Description", field:"desc",   width:300  }
         ];
+        
     }
 
     elm.append(propsDiv);
@@ -244,6 +245,41 @@ openmdao.PropertiesPane = function(elm,model,pathname,name,editable,meta) {
         dataView = new Slick.Data.DataView({ inlineFilters: false });
         props = new Slick.Grid(propsDiv, dataView, columns, options);
         if(meta){
+        
+            // Sorting for the first column
+            props.onSort.subscribe(function (e, args) {
+               
+                asc = args.sortAsc ? 1 : -1;
+                dataView.sort(function(rowa, rowb) {
+                    a = rowa.id;
+                    b = rowb.id;
+                    
+                    na = a.split('.');
+                    nb = b.split('.');
+                    min_dots = Math.min(a.length, b.length);
+                    
+                    for (idx=0; idx<min_dots; idx++) {
+                        if (na[idx] > nb[idx]) {
+                            return asc;
+                        }
+                        if (na[idx] < nb[idx]) {
+                            return -asc;
+                        }
+                        
+                    };
+                    return a.length - b.length;
+                }, true);
+                
+                highlightCells();
+                props.invalidate();
+                props.render();
+            });
+            
+            props.onContextMenu.subscribe(function(e){
+                console.log(e);
+                console.log(props.getCellFromEvent(e));
+            });
+            
             jQuery("#" + name + "_variableFilter").keyup(function (e) {
                 Slick.GlobalEditorLock.cancelCurrentEdit();
 
@@ -311,14 +347,13 @@ openmdao.PropertiesPane = function(elm,model,pathname,name,editable,meta) {
         });
 
         props.onBeforeEditCell.subscribe(function(row,cell) {
-            if (props.getDataItem(cell.row).connected.length > 0) {
+            var item = props.getDataItem(cell.row);
+            if (item.connected.length > 0) {
                 return false;
             }
-
-            else if (props.getDataItem(cell.row).ttype == 'slot') {
+            else if (item.ttype == 'vartree') {
                 return false;
             }
-
             else {
                 return true;
             }
@@ -468,7 +503,8 @@ openmdao.PropertiesPane = function(elm,model,pathname,name,editable,meta) {
                 if (value.hasOwnProperty("connected")) {
                     var nameStyle = '',
                         valueStyle = '';
-                    if (options.editable && (value.connected.length === 0) && (value.ttype != 'slot')) {
+                    if (options.editable && (value.connected.length === 0)
+                        && (value.ttype != 'vartree')) {
                         valueStyle += " cell-editable";
                     }
                     if (value.hasOwnProperty("implicit") && (value.implicit.length > 0)) {
