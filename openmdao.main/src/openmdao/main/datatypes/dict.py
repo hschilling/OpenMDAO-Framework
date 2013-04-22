@@ -82,7 +82,6 @@ class Dict(Enthought_Dict):
             _, slot_attr = inner.trait_type.get_attribute(name, inner_value, 
                                                           inner, meta)
             slot_attr['containertype'] = 'dict'
-            #slot_attr['filled'] = value.keys() # qqq
             slot_attr['filled'] = value.items()
 
 

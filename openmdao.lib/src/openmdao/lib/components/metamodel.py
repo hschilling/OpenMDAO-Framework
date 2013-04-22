@@ -248,9 +248,6 @@ class MetaModel(Component):
         """If the training flag is set, train the metamodel. Otherwise,
         predict outputs.
         """
-
-        #import pdb; pdb.set_trace()
-
         
         if self._train:
             try:
@@ -349,9 +346,6 @@ class MetaModel(Component):
         of variables with iotype of out, this method needed to be written
         """
         # get the leaf object
-
-        #import pdb; pdb.set_trace()
-
         names = path.split('.')
         obj = self
         for name in names[:-1]:
@@ -381,8 +375,6 @@ class MetaModel(Component):
         # TODO: check for nested MMs?  Is this a problem?
         # TODO: check for name collisions between MetaModel class traits and traits from model
 
-        #import pdb; pdb.set_trace()
-
         if newmodel is not None and not has_interface(newmodel, IComponent):
             self.raise_exception('model of type %s does not implement the IComponent interface' % type(newmodel).__name__,
                                  TypeError)
@@ -407,8 +399,6 @@ class MetaModel(Component):
         the appropriate type of output Variable based on the return value
         of get_uncertain_value on the surrogate.
         """
-
-        #import pdb; pdb.set_trace()
 
         if "." not in varname : # non vartree variable
             val = surrogate.get_uncertain_value(getattr(self.model, varname))
@@ -527,8 +517,6 @@ class MetaModel(Component):
         if training, save the output associated with surrogate.
         """
 
-        #import pdb; pdb.set_trace()
-
         for name in self.surrogate_output_names():
 
             out = self.model.get(name)
@@ -537,7 +525,6 @@ class MetaModel(Component):
                 self._set_output(name,out)
             else:
                 self._set_output(name,surrogate.get_uncertain_value(out))
-                #setattr(self, name, surrogate.get_uncertain_value(out))
 
             if self._train:
                 self._training_data[name].append(out)  # save to training output history
@@ -565,8 +552,6 @@ class MetaModel(Component):
     def _add_output(self, name):
         """Adds the specified output variable and its associated surrogate Slot."""
 
-        #import pdb; pdb.set_trace()
-        
         if "." not in name: # non vartree variable
             self.surrogates[name] = None
             if self.default_surrogate is not None:
@@ -600,8 +585,6 @@ class MetaModel(Component):
     def _add_output_new(self, name):
         """Adds the specified output variable and its associated surrogate Slot."""
 
-        #import pdb; pdb.set_trace()
-
         self.surrogates[name] = None
         if self.default_surrogate is not None:
             surrogate = deepcopy(self.default_surrogate)
@@ -631,7 +614,6 @@ class MetaModel(Component):
         Assumes one level of vartree
         """
 
-        #import pdb; pdb.set_trace()
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
 
@@ -650,8 +632,6 @@ class MetaModel(Component):
         if self.parent:
             self.parent.disconnect('.'.join([self.name, name]))
 
-
-        #import pdb; pdb.set_trace()
 
         if "." in name: # vartree
             del self.surrogates[ name ]
@@ -672,8 +652,6 @@ class MetaModel(Component):
         """Return the list of names of public inputs that correspond
         to model inputs.
         """
-
-        #import pdb; pdb.set_trace()
 
         if self._surrogate_input_names is None:
             if self.model:
@@ -704,8 +682,6 @@ class MetaModel(Component):
         to model outputs.
         """
 
-        #import pdb; pdb.set_trace()
-        
         if self._surrogate_output_names is None:
             if self.model:
                 self._surrogate_output_names = []
@@ -743,7 +719,6 @@ class MetaModel(Component):
         self._surrogate_input_names = None
         self._surrogate_output_names = None
 
-        #import pdb; pdb.set_trace()
         new_in = set(self.surrogate_input_names())
         new_out = set(self.surrogate_output_names())
         
@@ -781,7 +756,6 @@ class MetaModel(Component):
             if "." in name:
                 self.raise_exception("Can only exclude top level variable trees, not leaves",
                                      RuntimeError)
-        #import pdb; pdb.set_trace()
         self._update_surrogate_list()
         self.config_changed()
 

@@ -32,136 +32,32 @@ openmdao.SlotFigure=function(model,pathname,slot,isdict) {
                 + '    <text x="0" y="45" font-size="60" style="fill:gray">}</text>'
         + '</svg>' ;
 
-        // fig = slot.containertype === 'singleton' ?
-        //         jQuery(slotDiv).append(slotSVG) :
-        //         jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG),
     var filledRectCSS = {'stroke-width':4, 'stroke-dasharray':'none', 'stroke':'#0b93d5', 'fill': 'gray'}; 
     var filledTextCSS = {'fill': 'black'} ;
     var unfilledRectCSS = {'stroke-width':2, 'stroke-dasharray':8, 'stroke':'gray', 'fill': 'none'} ;
     var unfilledTextCSS = {'fill': 'gray'} ;
-    // var self = this,
-    //     id = 'SlotFigure-'+pathname.replace(/\./g,'-'),
-    //     slotDiv = '<div class="SlotFigure" style="margin:10px; clear:both;" />',
-    //     slotDictDiv = '<div class="SlotFigure" style="margin:10px; display:inline" >',
-    //     slotSVG = '<svg height="60" width="100">'
-    //             + '    <rect x="0" y="5" height="50" width="100" rx="15" ry="15";" />'
-    //             + '    <text id="name" x="50" y="25" text-anchor="middle">Name</text>'
-    //             + '    <text id="klass" x="50" y="45" font-style="italic" text-anchor="middle">Klass</text>'
-    //             + '</svg>',
-    //     lbrkSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">[</text>'
-    //             + '</svg>',
-    //     commSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">,</text>'
-    //             + '</svg>',
-    //     rbrkSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">]</text>'
-    //             + '</svg>',
-
-    //     lbraceSVG = '<svg height="60" width="20">'
-    //     + '    <text x="0" y="45" font-size="60" style="fill:gray">{</text>'
-    //             + '</svg>',
-    //     rbraceSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">}</text>'
-    //             + '</svg>',
-
-    //     // fig = slot.containertype === 'singleton' ?
-    //     //         jQuery(slotDiv).append(slotSVG) :
-    //     //         jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG),
-    //     filledRectCSS = {'stroke-width':4, 'stroke-dasharray':'none', 'stroke':'#0b93d5', 'fill': 'gray'},
-    //     filledTextCSS = {'fill': 'black'},
-    //     unfilledRectCSS = {'stroke-width':2, 'stroke-dasharray':8, 'stroke':'gray', 'fill': 'none'},
-    //     unfilledTextCSS = {'fill': 'gray'},
-    //     contextMenu = jQuery("<ul id="+id+"-menu class='context-menu'>")
-    //         .appendTo(fig);
 
 
-
-
-    // var self = this,
-    //     id = 'SlotFigure-'+pathname.replace(/\./g,'-'),
-    //     slotDiv = '<div class="SlotFigure" style="margin:10px; clear:both;" />',
-    //     slotDictDiv = '<div class="SlotFigure" style="margin:10px; display:inline" >',
-    //     slotSVG = '<svg height="60" width="100">'
-    //             + '    <rect x="0" y="5" height="50" width="100" rx="15" ry="15";" />'
-    //             + '    <text id="name" x="50" y="25" text-anchor="middle">Name</text>'
-    //             + '    <text id="klass" x="50" y="45" font-style="italic" text-anchor="middle">Klass</text>'
-    //             + '</svg>',
-    //     lbrkSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">[</text>'
-    //             + '</svg>',
-    //     commSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">,</text>'
-    //             + '</svg>',
-    //     rbrkSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">]</text>'
-    //             + '</svg>',
-
-    //     lbraceSVG = '<svg height="60" width="20">'
-    //     + '    <text x="0" y="45" font-size="60" style="fill:gray">{</text>'
-    //             + '</svg>',
-    //     rbraceSVG = '<svg height="60" width="20">'
-    //             + '    <text x="0" y="45" font-size="60" style="fill:gray">}</text>'
-    //             + '</svg>',
-
-    //     // fig = slot.containertype === 'singleton' ?
-    //     //         jQuery(slotDiv).append(slotSVG) :
-    //     //         jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG),
-    //     filledRectCSS = {'stroke-width':4, 'stroke-dasharray':'none', 'stroke':'#0b93d5', 'fill': 'gray'},
-    //     filledTextCSS = {'fill': 'black'},
-    //     unfilledRectCSS = {'stroke-width':2, 'stroke-dasharray':8, 'stroke':'gray', 'fill': 'none'},
-    //     unfilledTextCSS = {'fill': 'gray'},
-    //     contextMenu = jQuery("<ul id="+id+"-menu class='context-menu'>")
-    //         .appendTo(fig);
-
-
-
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //isdict = false ;
-
-    //var isdict_copy = false ;
-
-    // qqq
-
-    var fig ; // qqq
-        if ( slot.containertype === 'singleton' ){
-            if ( isdict ) {
-                fig = jQuery(slotDictDiv).append(slotSVG).append( "</div>" ) ;
-            } else {
-                fig = jQuery(slotDiv).append(slotSVG) ;
-            }
+    var fig ;
+    if ( slot.containertype === 'singleton' ){
+        if ( isdict ) {
+            fig = jQuery(slotDictDiv).append(slotSVG).append( "</div>" ) ;
+        } else {
+            fig = jQuery(slotDiv).append(slotSVG) ;
         }
-        else if ( slot.containertype === 'list' ){
-            fig = jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG) ;
-        }
-        else if ( slot.containertype === 'dict' ){
-            fig = jQuery(slotDiv).append(lbraceSVG).append(slotSVG).append(commSVG).append(rbraceSVG) ;
-        }
+    }
+    else if ( slot.containertype === 'list' ){
+        fig = jQuery(slotDiv).append(lbrkSVG).append(slotSVG).append(commSVG).append(rbrkSVG) ;
+    }
+    else if ( slot.containertype === 'dict' ){
+        fig = jQuery(slotDiv).append(lbraceSVG).append(slotSVG).append(commSVG).append(rbraceSVG) ;
+    }
 
 
-    // set name, id, tooltip and width
+    // set name, id, and title
     fig.find('#name').text(slot.name);
     fig.attr('id',id);
     fig.attr('title',slot.desc);
-
-    // fig.hover(
-    //     function(){
-    //         jQuery(this).tooltip({ content: "qqq" , 
-
-    //                                position : {
-    //                                    my : "right top",
-    //                                    at : "left-20 top",
-    //                                },
-
-
-    //                              });
-    //     }
-    // );
-
-    fig.tooltip({ content: "Awesome title!" });
-
 
     var contextMenu = jQuery("<ul id="+id+"-menu class='context-menu'>").appendTo(fig);
 
@@ -313,7 +209,6 @@ openmdao.SlotFigure=function(model,pathname,slot,isdict) {
                         }
                     }
                     model.issueCommand(cmd);
-                    //console.log( isdict );
                 }
             });
         }

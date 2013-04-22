@@ -166,7 +166,7 @@ class MetaModelTestCase(unittest.TestCase):
         self.assertTrue(len(metamodel._training_data['d']) == 3)
         self.assertTrue(len(metamodel._training_input_history) == 3)
         
-        # removing an output shouldn't clobber the rest of the training data
+        # removing an output should not clobber the rest of the training data
         metamodel.includes = ['a','b','c']
         
         self.assertTrue(len(metamodel._training_data['c']) == 3)
@@ -222,7 +222,7 @@ class MetaModelTestCase(unittest.TestCase):
         self.assertTrue(len(metamodel._training_data['d']) == 3)
         self.assertTrue(len(metamodel._training_input_history) == 3)
         
-        # removing an output shouldn't clobber the rest of the training data
+        # removing an output should not clobber the rest of the training data
         metamodel.includes = ['a','b','c']
         
         self.assertTrue(len(metamodel._training_data['c']) == 3)
@@ -580,7 +580,9 @@ class MetaModelTestCase(unittest.TestCase):
         s.run()
         
 ########################################
-#        Test Metamodel with VarTree
+#    Test Metamodel with VariableTree
+#      Currently metamodel only supports
+#       single level variable trees
 ########################################
 class InVtree(VariableTree): 
     a = Float(iotype="in")
@@ -680,7 +682,6 @@ class TestMetaModelWithVtree(unittest.TestCase):
                 asmb.mm.set(a_name, a)
                 asmb.mm.set(b_name, b)  
 
-        #import pdb; pdb.set_trace()
         asmb.mm.train_next = True
         
         set_ab(1, 2)
@@ -774,14 +775,9 @@ class TestMetaModelWithVtree(unittest.TestCase):
     def test_excludes_with_vartrees(self):
         self.a.mm.default_surrogate = KrigingSurrogate()
         self.a.mm.model = InandOutTree()
-        #import pdb; pdb.set_trace()
         self.a.mm.excludes = [ 'ins', 'outs']
-        #import pdb; pdb.set_trace()
-        #self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a', 'ins.b'])
-        #self.assertEqual(self.a.mm.surrogate_output_names(), [])
-        
+
         # now try changing the excludes
-        #import pdb; pdb.set_trace()
         self.a.mm.excludes = ['outs']
         self.assertEqual(self.a.mm.surrogate_input_names(), ['ins.a', 'ins.b'])
         self.assertEqual(self.a.mm.surrogate_output_names(), [])
@@ -799,8 +795,9 @@ class TestMetaModelWithVtree(unittest.TestCase):
         else:
             self.fail('Expected Exception')
 
-    def qqq_test_exclude_vartree_leaf(self):
+    def test_exclude_vartree_leaf(self):
         # Should not be allowed in this simplified
+        #   implementation of variable trees in metamodel
         self.a.mm.model = InandOutTree()
         self.a.mm.default_surrogate = KrigingSurrogate()
         try:

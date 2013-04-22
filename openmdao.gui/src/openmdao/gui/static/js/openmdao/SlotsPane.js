@@ -102,20 +102,10 @@ openmdao.SlotsPane = function(elm,model,pathname,name,editable) {
 
                         if ( idx < slot.filled.length - 1 ) {
                             slotsDiv.append(commSVG);
-                            // var comma = fig.next()
-                            // options = {
-                            //     "my": "center left",
-                            //     "at": "center right",
-                            //     "of": "#" + fig.attr('id')
-                            // };
-                            // comma.position(options);
-
-
                         }
                         ContextMenu.set(figMenu.attr('id'), fig.attr('id'));
                     } ) ;
                     slotsDiv.append(rbraceSVG);
-                    //slotsDiv.append('</div>');
                 }
                 else {
                     // create a new slot figure
