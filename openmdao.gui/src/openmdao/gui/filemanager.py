@@ -58,6 +58,14 @@ class FileManager(object):
     '''
 
     def __init__(self, name, path, publish_updates=False):
+
+        f = open('/home/hschilli/debug2','a')
+        import time
+        print>>f,"in filemanger init", self, time.time()
+        import inspect
+        print>>f, 'fm init caller name:', inspect.stack()[1][3]
+            
+        f.close()
         self.name = name
 
         self.orig_dir = os.getcwd()
@@ -198,8 +206,15 @@ class FileManager(object):
         ''' Delete file in working directory.
             Returns False if file was not found; otherwise, returns True.
         '''
+
+        f = open( '/home/hschilli/debug2', 'a' )
+        print>>f, "in file manager delete file"
+        f.close()
+        
         filepath = self._get_abs_path(filename)
+        print>>f, "in file manager", filepath
         if os.path.exists(filepath):
+            print>>f, "in file manager file exists"
             if os.path.isdir(filepath):
                 shutil.rmtree(filepath, onerror=onerror)
             else:

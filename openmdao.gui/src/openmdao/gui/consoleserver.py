@@ -495,9 +495,15 @@ class ConsoleServer(cmd.Cmd):
             # Start a new log file.
             logging.getLogger().handlers[0].doRollover()
 
+            f = open( '/home/hschilli/debug', 'a' )
+            print>>f, "inside load project, creating filemanager"
+            f.close()
             self.files = FileManager('files', path=projdir,
                                      publish_updates=self.publish_updates)
 
+            f = open( '/home/hschilli/debug', 'a' )
+            print>>f, "inside load project, creating filemanager", self.files
+            f.close()
             self.projdirfactory = ProjDirFactory(projdir,
                                                  observer=self.files.observer)
             register_class_factory(self.projdirfactory)
@@ -657,6 +663,10 @@ class ConsoleServer(cmd.Cmd):
         ''' Delete file from project.
             Returns False if file was not found; otherwise returns True.
         '''
+        f = open( '/home/hschilli/debug', 'a' )
+        import time
+        print>>f,"inside console server delete_file", self.files, time.time()
+        f.close()
         return self.files.delete_file(filename)
 
     @modifies_project

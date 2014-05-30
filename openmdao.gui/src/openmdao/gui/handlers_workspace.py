@@ -158,10 +158,13 @@ class FileHandler(ReqHandler):
                 contents = self.get_argument('contents', default='')
                 self.write(str(cserver.write_file(filename, contents)))
 
-    @web.authenticated
+    #@web.authenticated
     def delete(self, filename):
         cserver = self.get_server()
         self.content_type = 'text/html'
+        f = open("/home/hschilli/debug",'w')
+        print>>f, "deleting file", filename
+        f.close()
         if str(cserver.delete_file(filename)):
             self.set_status(204)  # successful, no data in response
 

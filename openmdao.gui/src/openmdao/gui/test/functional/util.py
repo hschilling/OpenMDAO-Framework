@@ -16,6 +16,10 @@ import time
 import urllib2
 import zipfile
 
+project_dict, workspace_page = None, None
+_project_created = False
+
+
 try:
     WindowsError
 except NameError:
@@ -163,7 +167,6 @@ _browsers_to_test = dict(
     #Firefox=(check_for_firefox, setup_firefox),
 )
 
-
 def setup_server(virtual_display=True):
     """ Start server on ``localhost`` using an unused port. """
     global _display, _display_set
@@ -222,12 +225,13 @@ def setup_server(virtual_display=True):
     else:
         raise RuntimeError('Timeout trying to connect to localhost:%d' % port)
 
+    print "port in setup server is", port
+
     # If running headless, setup the virtual display.
     if sys.platform.startswith("linux") and virtual_display:
         _display = Display(size=(1280, 1024))
         _display.start()
     _display_set = True
-
 
 def teardown_server():
     """ This function gets called once after all of the tests are run. """
@@ -390,11 +394,13 @@ def generate(modname):
                     print 'Could not delete chromedriver.log: %s' % exc
 
 
+
 class _Runner(object):
     """
     Used to get better descriptions on tests and post-mortem screenshots.
     If `browser` is an exception, raise it rather than running the test.
     """
+
 
     def __init__(self, test):
         self.test = test
@@ -405,11 +411,21 @@ class _Runner(object):
         self.failed = False
 
     def __call__(self, browser):
+        global project_dict, workspace_page, _project_created
         if isinstance(browser, Exception):
             raise browser  # Likely a hung webdriver.
         base_window = browser.current_window_handle
         try:
-            self.test(browser)
+            #import pdb; pdb.set_trace()
+            if not _project_created :
+                project_dict, workspace_page = startup(browser)
+                # browser.set_window_position(0, 0)
+                # browser.set_window_size(1280, 1024)
+                # projects_page = begin(browser)
+                # workspace_page, project_dict = random_project(projects_page.new_project(),
+                #                                   load_workspace=True)
+                _project_created = True
+            self.test(browser,project_dict, workspace_page) # when using nose
         except SkipTest:
             raise
         except Exception as exc:

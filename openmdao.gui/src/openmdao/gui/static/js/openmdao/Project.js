@@ -614,6 +614,7 @@ openmdao.Project=function(listeners_ready) {
 
     /** delete file with specified path from the project working directory */
     this.removeFile = function(filepath) {
+        //alert(filepath);
         var jqXHR = jQuery.ajax({
                     type: 'DELETE',
                     url:  'file'+filepath.replace(/\\/g,'/'),
