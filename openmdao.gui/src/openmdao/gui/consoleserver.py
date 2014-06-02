@@ -663,11 +663,29 @@ class ConsoleServer(cmd.Cmd):
         ''' Delete file from project.
             Returns False if file was not found; otherwise returns True.
         '''
-        f = open( '/home/hschilli/debug', 'a' )
+    @modifies_project
+    def delete_file(self, filename):
+        ''' Delete file from project.
+            Returns False if file was not found; otherwise returns True.
+        '''
+        f = open( '/home/hschilli/debug6', 'a' )
         import time
-        print>>f,"inside console server delete_file", self.files, time.time()
+        print>>f,"inside console server delete_file", filename, self.files, time.time()
+        #print>>f,"inside console server delete_file, get_files", [l in self.get_files() ]
         f.close()
-        return self.files.delete_file(filename)
+        if filename == '*':
+            f = open( '/home/hschilli/debug6', 'a' )
+            print>>f,'inside if'
+            f.close()
+            for file in self.get_files():
+                f = open( '/home/hschilli/debug6', 'a' )
+                print>>f,'get_files', file
+                f.close()
+                if file not in [ '_settings.cfg', '_macros' ]:
+                #if file not in [ '_settings.cfg',  ]:
+                    self.files.delete_file(file)
+        else:
+            return self.files.delete_file(filename)
 
     @modifies_project
     def rename_file(self, oldpath, newname):

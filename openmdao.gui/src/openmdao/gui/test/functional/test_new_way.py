@@ -24,11 +24,48 @@ from pageobjects.util import NotifierPage
 from pageobjects.workspace import WorkspacePage
 
 
-@with_setup(setup_server(virtual_display=False), teardown_server)
+@with_setup(setup_server(virtual_display=True), teardown_server)
 def test_generator():
     #q = generate( __name__ )
     for _test, browser in generate(__name__):
         yield _test, browser
+
+
+def _test_1(browser, project_dict, workspace_page):
+    #project_dict, workspace_page = startup(browser)
+    workspace_page.set_library_filter('optproblems')
+    objects = workspace_page.get_object_types()
+    
+    browser.execute_script('openmdao.project.clear();')
+
+    workspace_page.set_library_filter('optproblems')
+    objects = workspace_page.get_object_types()
+    
+    browser.execute_script('openmdao.project.clear();')
+
+    workspace_page.set_library_filter('optproblems')
+    objects = workspace_page.get_object_types()
+    
+    browser.execute_script('openmdao.project.clear();')
+
+
+    #closeout(project_dict, workspace_page)
+
+def _qqqtest_2(browser, project_dict, workspace_page):
+    #project_dict, workspace_page = startup(browser)
+    workspace_page.set_library_filter('optproblems')
+    objects = workspace_page.get_object_types()
+    
+    browser.execute_script('openmdao.project.clear();')
+    #closeout(project_dict, workspace_page)
+
+def _qqqtest_3(browser, project_dict, workspace_page):
+    #project_dict, workspace_page = startup(browser)
+    workspace_page.set_library_filter('optproblems')
+    objects = workspace_page.get_object_types()
+    
+    browser.execute_script('openmdao.project.clear();')
+    #closeout(project_dict, workspace_page)
 
 
 # def _test_standard_library(browser, project_dict, workspace_page):
@@ -41,7 +78,8 @@ def test_generator():
 #         'PolyScalableProblem',
 #         'SellarProblem',])
 
-    #closeout(project_dict, workspace_page)
+#     browser.execute_script('openmdao.project.clear();')
+#     #closeout(project_dict, workspace_page)
 
 # def _test_console(browser,project_dict, workspace_page):
 #     # Check basic console functionality.
@@ -56,38 +94,45 @@ def test_generator():
 #     expected = 'OpenMDAO: ' + project_dict['name'] + ' - '
 #     eq(title[:len(expected)], expected)
 
+#     browser.execute_script('openmdao.project.clear();')
 #     # Clean up.
 #     #closeout(project_dict, workspace_page)
 
-def _test_add_file(browser,project_dict, workspace_page):
-#def _test_add_file(browser):
-    # Check basic console functionality.
-    #project_dict, workspace_page = startup(browser)
-    # Get file paths
+# def _test_add_file(browser,project_dict, workspace_page):
+# #def _test_add_file(browser):
+#     # Check basic console functionality.
+#     #project_dict, workspace_page = startup(browser)
+#     # Get file paths
 
-    file1_path = pkg_resources.resource_filename('openmdao.examples.simple',
-                                                 'paraboloid.py')
+#     # file1_path = pkg_resources.resource_filename('openmdao.examples.simple',
+#     #                                              'paraboloid.py')
 
-    # add first file from workspace
-    workspace_page.add_file(file1_path)
+#     # # add first file from workspace
+#     # workspace_page.add_file(file1_path)
 
-    workspace_page.add_library_item_to_dataflow('openmdao.main.assembly.Assembly', 'top')
+#     # workspace_page.add_library_item_to_dataflow('openmdao.main.assembly.Assembly', 'top')
 
-    # print 'port',  TEST_CONFIG[ 'port' ]
+#     # workspace_page.new_folder('test_folder')
+#     # time.sleep(1.0)
+#     # workspace_page.add_file_to_folder('test_folder', file1_path)
 
-    # import requests
-    # r = requests.delete("http://localhost:%s/workspace/file/paraboloid.py" % str(TEST_CONFIG[ 'port' ]))
+#     # print 'port',  TEST_CONFIG[ 'port' ]
 
-    # print "requests status", r.status_code
+#     # import requests
+#     # r = requests.delete("http://localhost:%s/workspace/file/paraboloid.py" % str(TEST_CONFIG[ 'port' ]))
 
-
-    #browser.execute_script('openmdao.project.closeWebSockets();')
-    browser.execute_script('openmdao.project.removeFile("/paraboloid.py");')
-    browser.execute_script('openmdao.project.reload();')
+#     # print "requests status", r.status_code
 
 
-    # Clean up.
-    #closeout(project_dict, workspace_page)
+#     #browser.execute_script('openmdao.project.closeWebSockets();')
+#     #browser.execute_script('openmdao.project.removeFile("/paraboloid.py");')
+#     #browser.execute_script('openmdao.project.remove_all_user_files();')
+#     #browser.execute_script('openmdao.project.removeFile("/_macros/default");')
+#     #browser.execute_script('openmdao.project.reload();')
+#     browser.execute_script('openmdao.project.clear();')
+
+#     # Clean up.
+#     #closeout(project_dict, workspace_page)
 
 
 if __name__ == '__main__':

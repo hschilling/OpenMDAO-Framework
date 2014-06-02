@@ -113,7 +113,23 @@ class FileManager(object):
             cwd = self.root_dir
         else:
             cwd = root
+
         return filedict(cwd)
+
+    def remove_all_files(self, root=None):
+        ''' Remove all the user added files
+        '''
+        if root is None:
+            cwd = self.root_dir
+        else:
+            cwd = root
+
+        from openmdao.util.fileutil import cleanup
+        for f in os.listdir( cwd ):
+            if f[0] not in [ '.', '_' ]:
+                cleanup(f)
+
+        return
 
     def _get_abs_path(self, name):
         '''Return the absolute pathname of the given file/dir.
@@ -208,13 +224,15 @@ class FileManager(object):
         '''
 
         f = open( '/home/hschilli/debug2', 'a' )
-        print>>f, "in file manager delete file"
-        f.close()
+        print>>f, "in file manager delete file", filename
         
         filepath = self._get_abs_path(filename)
         print>>f, "in file manager", filepath
+        f.close()
         if os.path.exists(filepath):
+            f = open( '/home/hschilli/debug2', 'a' )
             print>>f, "in file manager file exists"
+            f.close()
             if os.path.isdir(filepath):
                 shutil.rmtree(filepath, onerror=onerror)
             else:
