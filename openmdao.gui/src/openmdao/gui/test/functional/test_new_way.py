@@ -70,6 +70,9 @@ def _qqqtest_1(browser, project_dict, workspace_page):
 
 def _test_standard_library(browser, project_dict, workspace_page):
     #project_dict, workspace_page = startup(browser)
+
+    print project_dict, workspace_page
+    #import pdb; pdb.set_trace()
     workspace_page.set_library_filter('optproblems')
     objects = workspace_page.get_object_types()
 
@@ -82,7 +85,7 @@ def _test_standard_library(browser, project_dict, workspace_page):
 
 
     ######################################
-    project_dict, workspace_page = startup(browser)
+    #project_dict, workspace_page = startup(browser)
     workspace_page('project_menu').click()
 
     browser.execute_script('openmdao.project.clear();')
@@ -94,6 +97,7 @@ def _test_standard_library(browser, project_dict, workspace_page):
 def _test_console(browser,project_dict, workspace_page):
     # Check basic console functionality.
     #project_dict, workspace_page = startup(browser)
+    print project_dict, workspace_page
 
     # time.sleep(6.0)
     # workspace_page.do_command("print 'blah'") ###### problems
@@ -112,6 +116,7 @@ def _test_console(browser,project_dict, workspace_page):
 def _test_slots_sorted_by_name(browser,project_dict, workspace_page):
 #def _test_slots_sorted_by_name(browser):
     #project_dict, workspace_page = startup(browser)
+    print project_dict, workspace_page
 
     #drop 'metamodel' onto the grid
     workspace_page.add_library_item_to_dataflow('openmdao.main.assembly.Assembly', 'top')
@@ -131,10 +136,11 @@ def _test_slots_sorted_by_name(browser,project_dict, workspace_page):
     browser.execute_script('openmdao.project.clear();')
     #closeout(project_dict, workspace_page)
 
-def _qqqtest_menu(browser,project_dict, workspace_page):
+def _test_menu(browser,project_dict, workspace_page):
 #def _test_menu(browser):
     #project_dict, workspace_page = startup(browser)
 
+    time.sleep(2)
     # Check enable/disable of commit/revert.
     workspace_page('project_menu').click()
     time.sleep(0.5)
@@ -168,7 +174,7 @@ def _qqqtest_menu(browser,project_dict, workspace_page):
         time.sleep(0.5)  # Just so we can see it.
 
     # Clean up.
-    closeout(project_dict, workspace_page)
+    #closeout(project_dict, workspace_page)
 
 
 def _qqqtest_add_file(browser,project_dict, workspace_page):
