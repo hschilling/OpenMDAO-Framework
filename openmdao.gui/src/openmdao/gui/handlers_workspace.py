@@ -162,9 +162,9 @@ class FileHandler(ReqHandler):
     def delete(self, filename):
         cserver = self.get_server()
         self.content_type = 'text/html'
-        f = open("/Users/hschilli/debug",'w')
-        print>>f, "deleting file", filename
-        f.close()
+        # f = open("/Users/hschilli/debug",'w')
+        # print>>f, "deleting file", filename
+        # f.close()
         if str(cserver.delete_file(filename)):
             self.set_status(204)  # successful, no data in response
 
@@ -486,9 +486,9 @@ class ProjectHandler(ReqHandler):
                 self.clear_cookie('projpath')
                 self.set_status(204)  # successful, no data in response
             elif action == 'clear':
-                f = open("/Users/hschilli/debug5", 'a' )
-                print >>f,"action clear"
-                f.close()
+                # f = open("/Users/hschilli/debug5", 'a' )
+                # print >>f,"action clear"
+                # f.close()
                 ret = cserver.delete_file('*')
                 if isinstance(ret, Exception):
                     self.send_error(500)

@@ -31,7 +31,7 @@ def test_generator():
         yield _test, browser
 
 
-def _test_1(browser, project_dict, workspace_page):
+def _qqqtest_1(browser, project_dict, workspace_page):
     #project_dict, workspace_page = startup(browser)
     workspace_page.set_library_filter('optproblems')
     objects = workspace_page.get_object_types()
@@ -79,11 +79,21 @@ def _test_standard_library(browser, project_dict, workspace_page):
         'SellarProblem',])
 
     browser.execute_script('openmdao.project.clear();')
+
+
+    ######################################
+    project_dict, workspace_page = startup(browser)
+    workspace_page('project_menu').click()
+
+    browser.execute_script('openmdao.project.clear();')
+
+
+
     #closeout(project_dict, workspace_page)
 
 def _test_console(browser,project_dict, workspace_page):
     # Check basic console functionality.
-    project_dict, workspace_page = startup(browser)
+    #project_dict, workspace_page = startup(browser)
 
     # time.sleep(6.0)
     # workspace_page.do_command("print 'blah'") ###### problems
@@ -121,7 +131,7 @@ def _test_slots_sorted_by_name(browser,project_dict, workspace_page):
     browser.execute_script('openmdao.project.clear();')
     #closeout(project_dict, workspace_page)
 
-def _test_menu(browser,project_dict, workspace_page):
+def _qqqtest_menu(browser,project_dict, workspace_page):
 #def _test_menu(browser):
     #project_dict, workspace_page = startup(browser)
 
@@ -161,7 +171,7 @@ def _test_menu(browser,project_dict, workspace_page):
     closeout(project_dict, workspace_page)
 
 
-def _test_add_file(browser,project_dict, workspace_page):
+def _qqqtest_add_file(browser,project_dict, workspace_page):
 #def _test_add_file(browser):
     # Check basic console functionality.
     #project_dict, workspace_page = startup(browser)
