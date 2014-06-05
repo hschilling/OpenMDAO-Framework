@@ -547,6 +547,7 @@ def submit_metadata(metadata_modal, name, description=None, version=None,
     Returns ``(projects_page, data)``
     """
 
+    #import pdb; pdb.set_trace()
     metadata_modal.submit_metadata(name, description, version)
     workspace_page = WorkspacePage.verify(metadata_modal.browser,
                                           TEST_CONFIG['port'])

@@ -28,6 +28,7 @@ from pageobjects.workspace import WorkspacePage
 def test_generator():
     #q = generate( __name__ )
     for _test, browser in generate(__name__):
+        #import pdb; pdb.set_trace()
         yield _test, browser
 
 
@@ -70,6 +71,7 @@ def _qqqtest_1(browser, project_dict, workspace_page):
 
 def _test_standard_library(browser, project_dict, workspace_page):
     #project_dict, workspace_page = startup(browser)
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
 
     print project_dict, workspace_page
     #import pdb; pdb.set_trace()
@@ -84,11 +86,11 @@ def _test_standard_library(browser, project_dict, workspace_page):
     browser.execute_script('openmdao.project.clear();')
 
 
-    ######################################
-    #project_dict, workspace_page = startup(browser)
-    workspace_page('project_menu').click()
+    # ######################################
+    # #project_dict, workspace_page = startup(browser)
+    # workspace_page('project_menu').click()
 
-    browser.execute_script('openmdao.project.clear();')
+    # browser.execute_script('openmdao.project.clear();')
 
 
 
@@ -98,6 +100,8 @@ def _test_console(browser,project_dict, workspace_page):
     # Check basic console functionality.
     #project_dict, workspace_page = startup(browser)
     print project_dict, workspace_page
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
+    print "after", workspace_page
 
     # time.sleep(6.0)
     # workspace_page.do_command("print 'blah'") ###### problems
@@ -116,6 +120,7 @@ def _test_console(browser,project_dict, workspace_page):
 def _test_slots_sorted_by_name(browser,project_dict, workspace_page):
 #def _test_slots_sorted_by_name(browser):
     #project_dict, workspace_page = startup(browser)
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
     print project_dict, workspace_page
 
     #drop 'metamodel' onto the grid
@@ -139,6 +144,7 @@ def _test_slots_sorted_by_name(browser,project_dict, workspace_page):
 def _test_menu(browser,project_dict, workspace_page):
 #def _test_menu(browser):
     #project_dict, workspace_page = startup(browser)
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
 
     time.sleep(2)
     # Check enable/disable of commit/revert.
