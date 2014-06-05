@@ -486,9 +486,9 @@ class ProjectHandler(ReqHandler):
                 self.clear_cookie('projpath')
                 self.set_status(204)  # successful, no data in response
             elif action == 'clear':
-                # f = open("/Users/hschilli/debug5", 'a' )
-                # print >>f,"action clear"
-                # f.close()
+                f = open("/Users/hschilli/debug5", 'a' )
+                print >>f,"action clear"
+                f.close()
                 ret = cserver.delete_file('*')
                 if isinstance(ret, Exception):
                     self.send_error(500)

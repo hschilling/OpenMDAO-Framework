@@ -709,8 +709,8 @@ openmdao.Project=function(listeners_ready) {
             data: {'action': 'clear'}
         })
         .done(function() {
-        window.location.replace('/workspace/project');
-        document.location.reload(true); // qqq ??
+            window.location.replace('/workspace/project');
+            document.location.reload(true); // qqq ??
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
             debug.error('Error clearing project',

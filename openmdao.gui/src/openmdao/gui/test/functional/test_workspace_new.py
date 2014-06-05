@@ -709,7 +709,8 @@ def execute(self)
     # Load file with instantiation error.
     workspace_window = browser.current_window_handle
     if broken_chrome():
-        raise SkipTest('Test broken for chrome/selenium combination')
+       browser.execute_script('openmdao.project.clear();')
+       raise SkipTest('Test broken for chrome/selenium combination')
     editor_page = workspace_page.open_editor()
     editor_page.new_file('bug2.py', """
 from openmdao.main.api import Component
