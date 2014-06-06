@@ -495,13 +495,13 @@ class ConsoleServer(cmd.Cmd):
             # Start a new log file.
             logging.getLogger().handlers[0].doRollover()
 
-            # f = open( '/Users/hschilli/debug', 'a' )
+            # f = open( '/Users/herbertschilling/debug', 'a' )
             # print>>f, "inside load project, creating filemanager"
             # f.close()
             self.files = FileManager('files', path=projdir,
                                      publish_updates=self.publish_updates)
 
-            # f = open( '/Users/hschilli/debug', 'a' )
+            # f = open( '/Users/herbertschilling/debug', 'a' )
             # print>>f, "inside load project, creating filemanager", self.files
             # f.close()
             self.projdirfactory = ProjDirFactory(projdir,
@@ -668,26 +668,26 @@ class ConsoleServer(cmd.Cmd):
         ''' Delete file from project.
             Returns False if file was not found; otherwise returns True.
         '''
-        f = open( '/Users/hschilli/debug6', 'a' )
+        f = open( '/Users/herbertschilling/debug6', 'a' )
         import time
         print>>f,"inside console server delete_file", filename, self.files, time.time()
         #print>>f,"inside console server delete_file, get_files", [l in self.get_files() ]
         f.close()
         if filename == '*':
-            f = open( '/Users/hschilli/debug6', 'a' )
+            f = open( '/Users/herbertschilling/debug6', 'a' )
             print>>f,'inside if', self.get_files()
             f.close()
             for file in self.get_files():
-                f = open( '/Users/hschilli/debug6', 'a' )
+                f = open( '/Users/herbertschilling/debug6', 'a' )
                 print>>f,'get_files', file
                 print>>f,'self.files', self.files
                 f.close()
-                if file not in [ '/_settings.cfg', '/_macros' ]:
-                    f = open( '/Users/hschilli/debug6', 'a' )
+                if file not in [ '/_settings.cfg',  ]:
+                    f = open( '/Users/herbertschilling/debug6', 'a' )
                     print>>f,'deleting', file
                     f.close()
                     self.files.delete_file(file)
-                    f = open( '/Users/hschilli/debug6', 'a' )
+                    f = open( '/Users/herbertschilling/debug6', 'a' )
                     print>>f,'deleted', file
                     f.close()
 
