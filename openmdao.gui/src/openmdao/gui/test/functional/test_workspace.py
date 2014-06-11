@@ -363,7 +363,7 @@ b = Float(0.0, iotype='out')
     workspace_page.add_library_item_to_dataflow('openmdao.main.assembly.Assembly', 'top')
     workspace_page.show_dataflow('top')
     time.sleep(2)  # Wait for it to get registered.
-    workspace_page.set_library_filter('In Project')
+    #workspace_page.set_library_filter('In Project')
     workspace_page.add_library_item_to_dataflow('foo.Foo', 'comp1')
     workspace_page.add_library_item_to_dataflow('foo.Foo', 'comp2')
 
@@ -376,6 +376,7 @@ b = Float(0.0, iotype='out')
     workspace_page.commit_project('added some Foos')
 
     if broken_chrome():
+        closeout(project_dict, workspace_page)
         raise SkipTest('Test broken for chrome/selenium combination')
     editor_page = workspace_page.open_editor()
     editor_page.edit_file('foo.py', dclick=False)
@@ -409,6 +410,7 @@ b = Float(0.0, iotype='out')
     browser.switch_to_window(workspace_window)
     for line in contents.split('\n'):
         if 'run' in line:
+            closeout(project_dict, workspace_page)
             raise AssertionError(line)
 
     # Check if command errors are recorded (they shouldn't be).
@@ -423,6 +425,7 @@ b = Float(0.0, iotype='out')
     browser.switch_to_window(workspace_window)
     for line in contents.split('\n'):
         if 'xyzzy' in line:
+            closeout(project_dict, workspace_page)
             raise AssertionError(line)
 
     # Clean up.
@@ -683,6 +686,7 @@ def execute(self)
     # Load file with instantiation error.
     workspace_window = browser.current_window_handle
     if broken_chrome():
+        closeout(project_dict, workspace_page)
         raise SkipTest('Test broken for chrome/selenium combination')
     editor_page = workspace_page.open_editor()
     editor_page.new_file('bug2.py', """

@@ -59,7 +59,7 @@ class FileManager(object):
 
     def __init__(self, name, path, publish_updates=False):
 
-        # f = open('/Users/herbertschilling/debug2','a')
+        # f = open('/Users/hschilli/debug2','a')
         # import time
         # print>>f,"in filemanger init", self, time.time()
         # import inspect
@@ -223,16 +223,16 @@ class FileManager(object):
             Returns False if file was not found; otherwise, returns True.
         '''
 
-        f = open( '/Users/herbertschilling/debug2', 'a' )
-        print>>f, "in file manager delete file", filename
+        # f = open( '/Users/hschilli/debug2', 'a' )
+        # print>>f, "in file manager delete file", filename
         
         filepath = self._get_abs_path(filename)
-        print>>f, "in file manager", filepath
-        f.close()
+        # print>>f, "in file manager", filepath
+        # f.close()
         if os.path.exists(filepath):
-            f = open( '/Users/herbertschilling/debug2', 'a' )
-            print>>f, "in file manager file exists"
-            f.close()
+            # f = open( '/Users/hschilli/debug2', 'a' )
+            # print>>f, "in file manager file exists"
+            # f.close()
             if os.path.isdir(filepath):
                 shutil.rmtree(filepath, onerror=onerror)
             else:

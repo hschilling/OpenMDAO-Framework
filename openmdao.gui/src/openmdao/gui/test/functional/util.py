@@ -16,8 +16,10 @@ import time
 import urllib2
 import zipfile
 
-project_dict, workspace_page = None, None
-_project_created = False
+class ProjectTestingInfo:
+    project_dict = None
+    workspace_page = None
+    _project_created = False
 
 
 try:
@@ -25,6 +27,7 @@ try:
 except NameError:
     WindowsError = None
 
+from collections import namedtuple
 from distutils.spawn import find_executable
 from nose import SkipTest
 from nose.tools import eq_ as eq
@@ -57,7 +60,6 @@ _display = None
 
 _chrome_version = None
 
-
 def check_for_chrome():
     return bool(find_chrome())
 
@@ -87,20 +89,12 @@ def setup_chrome():
     path = find_executable(exe)
     if not path:
         # Download, unpack, and install chromedriver into OpenMDAO 'bin'.
-        # Note: As new versions of Chrome & chromedriver are released, the
-        #       following should be updated.  Refer to the following URL:
-        #       https://chromedriver.storage.googleapis.com/index.html
-        #       and see notes.txt for each version for Chrome compatibility
-        if _chrome_version > 32:
-            version = '2.10'
-        elif _chrome_version > 30:
-            version = '2.9'
-        elif _chrome_version > 29:
-            version = '2.8'
+        if _chrome_version > 29:
+            version = 2.8
         elif _chrome_version > 28:
-            version = '2.6'
+            version = 2.6
         else:
-            version = '2.3'
+            version = 2.3
 
         if sys.platform == 'darwin':
             flavor = 'mac32'
@@ -117,7 +111,7 @@ def setup_chrome():
         os.chdir(os.path.dirname(sys.executable))
 
         prefix = 'http://chromedriver.storage.googleapis.com'
-        url = '/'.join([prefix, version, filename])
+        url = '/'.join([prefix, str(version), filename])
         logging.critical('Downloading %s for chrome version %d to %s',
                          url, _chrome_version, os.getcwd())
         try:
@@ -166,6 +160,7 @@ _browsers_to_test = dict(
     Chrome=(check_for_chrome, setup_chrome),
     #Firefox=(check_for_firefox, setup_firefox),
 )
+
 
 def setup_server(virtual_display=True):
     """ Start server on ``localhost`` using an unused port. """
@@ -225,13 +220,12 @@ def setup_server(virtual_display=True):
     else:
         raise RuntimeError('Timeout trying to connect to localhost:%d' % port)
 
-    print "port in setup server is", port
-
     # If running headless, setup the virtual display.
     if sys.platform.startswith("linux") and virtual_display:
         _display = Display(size=(1280, 1024))
         _display.start()
     _display_set = True
+
 
 def teardown_server():
     """ This function gets called once after all of the tests are run. """
@@ -361,6 +355,7 @@ def generate(modname):
             else:
                 logging.critical('Run %s using %s', test.__name__, name)
                 yield runner, browser
+        ProjectTestingInfo._project_created = False
         if runner is not None and runner.failed:
             cleanup = False
 
@@ -394,13 +389,11 @@ def generate(modname):
                     print 'Could not delete chromedriver.log: %s' % exc
 
 
-
 class _Runner(object):
     """
     Used to get better descriptions on tests and post-mortem screenshots.
     If `browser` is an exception, raise it rather than running the test.
     """
-
 
     def __init__(self, test):
         self.test = test
@@ -411,21 +404,16 @@ class _Runner(object):
         self.failed = False
 
     def __call__(self, browser):
-        global project_dict, workspace_page, _project_created
         if isinstance(browser, Exception):
             raise browser  # Likely a hung webdriver.
         base_window = browser.current_window_handle
+
+        print "ProjectTestingInfo._project_created", ProjectTestingInfo._project_created
         try:
-            #import pdb; pdb.set_trace()
-            if not _project_created :
-                project_dict, workspace_page = startup(browser)
-                # browser.set_window_position(0, 0)
-                # browser.set_window_size(1280, 1024)
-                # projects_page = begin(browser)
-                # workspace_page, project_dict = random_project(projects_page.new_project(),
-                #                                   load_workspace=True)
-                _project_created = True
-            self.test(browser,project_dict, workspace_page) # when using nose
+            if not ProjectTestingInfo._project_created :
+                ProjectTestingInfo.project_dict, ProjectTestingInfo.workspace_page = old_startup(browser)
+                ProjectTestingInfo._project_created = True
+            self.test(browser)
         except SkipTest:
             raise
         except Exception as exc:
@@ -495,7 +483,7 @@ def _save_screenshot(browser, filename, retry=True):
     return True
 
 
-def startup(browser):
+def old_startup(browser):
     """ Create a project and enter workspace. """
     print 'running %s...' % inspect.stack()[1][3]
     browser.set_window_position(0, 0)
@@ -506,12 +494,21 @@ def startup(browser):
     return project_dict, workspace_page
 
 
-def closeout(project_dict, workspace_page):
+def startup(browser):
+    """ Create a project and enter workspace. """
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
+    return ProjectTestingInfo.project_dict, workspace_page
+
+
+def old_closeout(project_dict, workspace_page):
     """ Clean up after a test. """
     projects_page = workspace_page.close_workspace()
     projects_page.delete_project(project_dict['name'])
     print '%s complete.' % inspect.stack()[1][3]
 
+def closeout(project_dict, workspace_page):
+    """ Clean up after a test. """
+    workspace_page.browser.execute_script('openmdao.project.clear();')
 
 def begin(browser):
     """
@@ -547,7 +544,6 @@ def submit_metadata(metadata_modal, name, description=None, version=None,
     Returns ``(projects_page, data)``
     """
 
-    #import pdb; pdb.set_trace()
     metadata_modal.submit_metadata(name, description, version)
     workspace_page = WorkspacePage.verify(metadata_modal.browser,
                                           TEST_CONFIG['port'])
@@ -636,7 +632,6 @@ def parse_test_args(args=None):
         sys.exit(-1)
 
     return options
-
 
 def main(args=None):
     """ run tests for module

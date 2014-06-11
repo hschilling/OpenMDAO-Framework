@@ -50,6 +50,7 @@ def _test_crlf(browser):
     # re-open file and verify comment was successfully added
     workspace_window = browser.current_window_handle
     if broken_chrome():
+        closeout(project_dict, workspace_page)
         raise SkipTest('Test broken for chrome/selenium combination')
     editor_page = workspace_page.edit_file(filename)
     assert editor_page.get_code().endswith(comment)
@@ -89,6 +90,7 @@ def _test_editfile(browser):
     # verify code editor can be re-opened by double clicking on file
     workspace_window = browser.current_window_handle
     if broken_chrome():
+        closeout(project_dict, workspace_page)
         raise SkipTest('Test broken for chrome/selenium combination')
     editor_page = workspace_page.edit_file(file1)
     eq(str(editor_page.get_tab_label()), '/' + file1)
@@ -135,6 +137,7 @@ return x**2"""
 
     # Go back to code editor, open file, verify source code
     if broken_chrome():
+        closeout(project_dict, workspace_page)
         raise SkipTest('Test broken for chrome/selenium combination')
     editor_page = workspace_page.edit_file('test1.py')  # this file was saved
     time.sleep(1)

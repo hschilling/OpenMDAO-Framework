@@ -142,6 +142,9 @@ class WorkspacePage(BasePageObject):
     def __init__(self, browser, port):
         super(WorkspacePage, self).__init__(browser, port)
 
+        self.browser = browser # so that we can get at the browser for parts
+                               #   of the code that only have access the workspace_page
+
         self.locators = {}
         self.locators["objects"] = \
             (By.XPATH, "//div[@id='otree_pane']//li[@path]")
