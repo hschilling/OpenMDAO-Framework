@@ -494,9 +494,18 @@ def old_startup(browser):
     return project_dict, workspace_page
 
 
-def startup(browser):
+def startup_old(browser):
     """ Create a project and enter workspace. """
     workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
+    return ProjectTestingInfo.project_dict, workspace_page
+
+def startup(browser):
+    """ Create a project and enter workspace. """
+    #workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
+    workspace_page = WorkspacePage(browser, TEST_CONFIG['port'])
+    workspace_page.browser.execute_script('openmdao.project.clear();')
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
+
     return ProjectTestingInfo.project_dict, workspace_page
 
 
@@ -508,7 +517,8 @@ def old_closeout(project_dict, workspace_page):
 
 def closeout(project_dict, workspace_page):
     """ Clean up after a test. """
-    workspace_page.browser.execute_script('openmdao.project.clear();')
+    pass
+    #workspace_page.browser.execute_script('openmdao.project.clear();')
 
 def begin(browser):
     """
