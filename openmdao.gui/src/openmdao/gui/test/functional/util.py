@@ -50,6 +50,10 @@ TEST_CONFIG = dict(browsers=[], server=None, port=None)
 _display_set = False
 _display = None
 
+class ProjectTestingInfo:
+    project_dict = None
+    workspace_page = None
+    _project_created = False
 
 _chrome_version = None
 
@@ -355,6 +359,7 @@ def generate(modname):
             else:
                 logging.critical('Run %s using %s', test.__name__, name)
                 yield runner, browser
+        ProjectTestingInfo._project_created = False
         if runner is not None and runner.failed:
             cleanup = False
 
@@ -407,7 +412,10 @@ class _Runner(object):
             raise browser  # Likely a hung webdriver.
         base_window = browser.current_window_handle
         try:
-            self.test(browser)
+            if not ProjectTestingInfo._project_created :
+                ProjectTestingInfo.project_dict, ProjectTestingInfo.workspace_page = test_file_startup(browser)
+                ProjectTestingInfo._project_created = True
+           self.test(browser)
         except SkipTest:
             raise
         except Exception as exc:
@@ -477,7 +485,7 @@ def _save_screenshot(browser, filename, retry=True):
     return True
 
 
-def startup(browser):
+def test_file_startup(browser):
     """ Create a project and enter workspace. """
     print 'running %s...' % inspect.stack()[1][3]
     browser.set_window_position(0, 0)
@@ -487,12 +495,24 @@ def startup(browser):
                                                   load_workspace=True)
     return project_dict, workspace_page
 
+def startup(browser):
+    """ Create a project and enter workspace. """
+    workspace_page = WorkspacePage(browser, TEST_CONFIG['port'])
+    workspace_page.browser.execute_script('openmdao.project.clear();')
+    workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
 
-def closeout(project_dict, workspace_page):
+    return ProjectTestingInfo.project_dict, workspace_page
+
+def test_file_closeout(project_dict, workspace_page):
     """ Clean up after a test. """
     projects_page = workspace_page.close_workspace()
     projects_page.delete_project(project_dict['name'])
     print '%s complete.' % inspect.stack()[1][3]
+
+def closeout(project_dict, workspace_page):
+    """ Clean up after a test. """
+    pass
+    #workspace_page.browser.execute_script('openmdao.project.clear();')
 
 
 def begin(browser):
