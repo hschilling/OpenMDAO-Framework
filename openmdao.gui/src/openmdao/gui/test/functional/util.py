@@ -415,7 +415,7 @@ class _Runner(object):
             if not ProjectTestingInfo._project_created :
                 ProjectTestingInfo.project_dict, ProjectTestingInfo.workspace_page = test_file_startup(browser)
                 ProjectTestingInfo._project_created = True
-           self.test(browser)
+            self.test(browser)
         except SkipTest:
             raise
         except Exception as exc:
