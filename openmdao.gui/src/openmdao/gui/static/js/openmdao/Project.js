@@ -693,6 +693,48 @@ openmdao.Project=function(listeners_ready) {
         window.location.replace('/workspace/project');
     };
 
+    /** clear the project so user can start from scratch. Does not preserve
+        what was in macro file */
+    this.old_clear = function() {
+        _self.removeFile( "/_macros/default" );
+        _self.reload();
+    };
+
+    this.clear = function() {
+        closeWindows();
+        closeWebSockets('clear');
+        jQuery.ajax({
+            type: 'POST',
+            url:  'project',
+            data: {'action': 'clear'}
+        })
+        .done(function() {
+            window.location.replace('/workspace/project');
+            document.location.reload(true); // ??? qqq
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            debug.error('Error clearing project',
+                        jqXHR, textStatus, errorThrown);
+            alert('Error clearing project: '+textStatus+'\n'+errorThrown);
+        });
+    };
+
+    /** remove user added files from the project */
+    this.remove_all_files = function() {
+        var jqXHR = jQuery.ajax({
+                    type: 'DELETE',
+                    url:  'remove_all_files',
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    alert('Error removing all user files: ' + textStatus);
+                    debug.error('Error removing all user files', path, name,
+                                jqXHR, textStatus, errorThrown);
+                });
+
+        setModified(true);
+        return jqXHR.promise();
+    };
+
     /** close the project and redirect to the specified url */
     this.close = function(url) {
         closeWindows();
