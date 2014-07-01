@@ -494,13 +494,15 @@ def test_file_startup(browser):
     workspace_page, project_dict = random_project(projects_page.new_project(),
                                                   load_workspace=True)
     return project_dict, workspace_page
-
+import time
 def startup(browser):
     """ Create a project and enter workspace. """
+    t0 = time.time()
     workspace_page = WorkspacePage(browser, TEST_CONFIG['port'])
     workspace_page.browser.execute_script('openmdao.project.clear();')
     workspace_page = WorkspacePage.verify(browser, TEST_CONFIG['port'])
 
+    print "startup time", time.time() - t0
     return ProjectTestingInfo.project_dict, workspace_page
 
 def test_file_closeout(project_dict, workspace_page):
@@ -511,8 +513,10 @@ def test_file_closeout(project_dict, workspace_page):
 
 def closeout(project_dict, workspace_page):
     """ Clean up after a test. """
+    t0 = time.time()
     pass
-    #workspace_page.browser.execute_script('openmdao.project.clear();')
+    print "closeout time", time.time() -t0
+   #workspace_page.browser.execute_script('openmdao.project.clear();')
 
 
 def begin(browser):
