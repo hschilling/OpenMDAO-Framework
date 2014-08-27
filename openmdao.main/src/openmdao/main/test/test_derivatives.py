@@ -3399,6 +3399,9 @@ class TestMultiDriver(unittest.TestCase):
         self.assertEqual(set(edges['_pseudo_1.out0']), set(['@out0']))
         self.assertEqual(len(edges), 3)
 
+        from openmdao.util.dotgraph import plot_graph
+        plot_graph( top._depgraph, fmt='plain-ext' )
+
     def test_PA_subvar_solver_edges(self):
 
         # Note, this test documents a bug where the pseudoassembly didn't
