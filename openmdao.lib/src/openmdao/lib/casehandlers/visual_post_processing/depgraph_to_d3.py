@@ -211,7 +211,11 @@ with open("graph.plain-ext", "r") as f:
     if line.startswith( "edge"):
         # edge tail head n x1 y1 .. xn yn [label xl yl] style color
         #{ source: 0, target: 1 },
-        dummy, tail, head = line.split()[:3]
+        dummy, tail, head, n = line.split()[:4]
+        line_spec = 'var lineData = ['
+        for i in range(n):
+            line_spec += '{ "x": %s,   "y": %s},\n' % ( line.split()[4+1]), line.split()[5+i]) )
+        line_spec += '];'
         if tail.startswith('"'):
             tail = tail[1:-1]
         if head.startswith('"'):
@@ -293,7 +297,11 @@ contents += '''
             .text(function(d) { return d.name })
             .style("text-anchor", "middle")
             ;
-        
+        '''
+
+contents += line_spec 
+
+contents += '''
 //The data for our line
  var lineData = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
                   { "x": 40,  "y": 10}, { "x": 60,  "y": 40},
