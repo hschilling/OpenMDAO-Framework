@@ -150,7 +150,7 @@ edges = top.inner_driver.workflow._edges
 #print top.inner_driver.list_objective_targets()
 
 from openmdao.util.dotgraph import plot_graph
-plot_graph( top._depgraph, fmt='plain-ext' )
+plot_graph( top._depgraph, fmt='plain' )
 
 
 
@@ -216,7 +216,8 @@ with open("graph.plain-ext", "r") as f:
             tail = tail[1:-1]
         if head.startswith('"'):
             head = head[1:-1]
-        edge_content += '{sourcex: %s ,sourcey: %s, targetx: %s, targety: %s},\n' % ( node_locations[tail][0], node_locations[tail][1], node_locations[head][0], node_locations[head][1] )
+        #edge_content += '{sourcex: %s ,sourcey: %s, targetx: %s, targety: %s},\n' % ( node_locations[tail][0], node_locations[tail][1], node_locations[head][0], node_locations[head][1] )
+        edge_content += '{source: "%s" , target: "%s"},\n' % ( tail, head )
 
 contents += node_content
 
@@ -224,6 +225,7 @@ contents += '''
             ],
             edges: [
             '''
+
 contents += edge_content
 
 
@@ -242,11 +244,7 @@ contents += '''
             .enter().append("line")
             .attr("class", "link")
             .attr("stroke", "green")
-            .attr("stroke-width", 5)
-            .attr("x1", function(d) { alert(d.sourcex); return d.sourcex; })
-            .attr("y1", function(d) { return d.sourcey; })
-            .attr("x2", function(d) { return d.targetx; })
-            .attr("y2", function(d) { return d.targety; });
+            .attr("stroke-width", 5);
   
 
         var node = svg.selectAll(".node")
@@ -279,11 +277,6 @@ contents += '''
             return "node type" + d.type
         });
 
-        poly = [{"x":0.0, "y":25.0},
-                {"x":8.5,"y":23.4},
-                {"x":13.0,"y":21.0},
-                {"x":19.0,"y":15.5}];
-
         d3.selectAll(".diamond").append("polygon")
             .attr("points", "-30,0, 0,25, 30,0 0,-25")
             .attr("fill", "none")
@@ -301,21 +294,35 @@ contents += '''
             .style("text-anchor", "middle")
             ;
         
-        force.on("tick", tick);
+//The data for our line
+ var lineData = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
+                  { "x": 40,  "y": 10}, { "x": 60,  "y": 40},
+                  { "x": 80,  "y": 5},  { "x": 100, "y": 60}];
+ 
+ //This is the accessor function we talked about above
+ var lineFunction = d3.svg.line()
+                          .x(function(d) { return d.x; })
+                          .y(function(d) { return d.y; })
+                         .interpolate("basis");
+
+//The line SVG Path we draw
+var lineGraph = svg.append("path")
+                            .attr("d", lineFunction(lineData))
+                            .attr("stroke", "blue")
+                            .attr("stroke-width", 2)
+                            .attr("fill", "none");
+
+       force.on("tick", tick);
 
         function tick() {
-          link.attr("x1", function(d) { return d.source.x; })
-          .attr("y1", function(d) { return d.source.y; })
-          .attr("x2", function(d) { return d.target.x; })
-          .attr("y2", function(d) { return d.target.y; });
+          link.attr("x1", function(d) { return xscale(2); })
+          .attr("y1", function(d) { return yscale(2); })
+          .attr("x2", function(d) { return xscale(4); })
+          .attr("y2", function(d) { return yscale(4); });
 
         }
 
 };
-
-    
-
-
 
         </script>
 
