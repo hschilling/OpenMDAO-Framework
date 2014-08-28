@@ -151,6 +151,7 @@ edges = top.inner_driver.workflow._edges
 
 from openmdao.util.dotgraph import plot_graph
 plot_graph( top._depgraph, fmt='plain' )
+#plot_graph( top._depgraph, fmt='svg' )
 
 
 
@@ -195,10 +196,11 @@ window.onload = function(){
     var dataSet = {
             nodes: [ '''
 
-with open("graph.plain-ext", "r") as f:
+with open("graph.plain", "r") as f:
   node_content = ''
   edge_content = ''
   node_locations = {}
+  edge_datas = []
   for i, line in enumerate(f):
     if line.startswith( "node"):
         # node name x y width height label style shape color fillcolor
@@ -212,16 +214,21 @@ with open("graph.plain-ext", "r") as f:
         # edge tail head n x1 y1 .. xn yn [label xl yl] style color
         #{ source: 0, target: 1 },
         dummy, tail, head, n = line.split()[:4]
-        line_spec = 'var lineData = ['
-        for i in range(n):
-            line_spec += '{ "x": %s,   "y": %s},\n' % ( line.split()[4+1]), line.split()[5+i]) )
-        line_spec += '];'
         if tail.startswith('"'):
             tail = tail[1:-1]
         if head.startswith('"'):
             head = head[1:-1]
-        #edge_content += '{sourcex: %s ,sourcey: %s, targetx: %s, targety: %s},\n' % ( node_locations[tail][0], node_locations[tail][1], node_locations[head][0], node_locations[head][1] )
-        edge_content += '{source: "%s" , target: "%s"},\n' % ( tail, head )
+        if tail == '_pseudo_1.in2' and head == '_pseudo_1':
+            edge_data = 'var lineData = ['
+            control_points = []
+            for i in range(int(n)):
+                #edge_data += '{ "x": xscale(%s),   "y": yscale(%s)},\n' % ( line.split()[4+i], line.split()[5+i] )
+                edge_data += '{ "x": %s,   "y": %s},\n' % ( line.split()[4+i], line.split()[5+i] )
+                control_points.append( (line.split()[4+2*i], line.split()[5+2*i]) )
+            edge_data += ']; // ' + tail + ' ' + head 
+            edge_datas.append( edge_data )
+            #edge_content += '{sourcex: %s ,sourcey: %s, targetx: %s, targety: %s},\n' % ( node_locations[tail][0], node_locations[tail][1], node_locations[head][0], node_locations[head][1] )
+            edge_content += '{source: "%s" , target: "%s"},\n' % ( tail, head )
 
 contents += node_content
 
@@ -239,16 +246,15 @@ contents += '''
     
         var force = self.force = d3.layout.force()
             .nodes(dataSet.nodes)
-            .links(dataSet.edges)
             .size([w,h])
             .start();
 
-        var link = svg.selectAll(".link")
-            .data(dataSet.edges)
-            .enter().append("line")
-            .attr("class", "link")
-            .attr("stroke", "green")
-            .attr("stroke-width", 5);
+        //var link = svg.selectAll(".link")
+         //   .data(dataSet.edges)
+          //  .enter().append("line")
+         //   .attr("class", "link")
+          //  .attr("stroke", "green")
+          //  .attr("stroke-width", 5);
   
 
         var node = svg.selectAll(".node")
@@ -266,9 +272,7 @@ contents += '''
             .attr("ry", 20)
             .attr("stroke", "black")
             .attr("stroke-width", 2)
-            .attr("class", function (d) {
-            return "node type" + d.type
-        });
+        ;
 
         d3.selectAll(".box").append("rect")
             .attr("width", 80)
@@ -277,9 +281,7 @@ contents += '''
             .attr("stroke", "black")
             .attr("stroke-width", 2)
             .attr("transform", "translate(-40,-20)")
-            .attr("class", function (d) {
-            return "node type" + d.type
-        });
+        ;
 
         d3.selectAll(".diamond").append("polygon")
             .attr("points", "-30,0, 0,25, 30,0 0,-25")
@@ -297,38 +299,82 @@ contents += '''
             .text(function(d) { return d.name })
             .style("text-anchor", "middle")
             ;
-        '''
 
-contents += line_spec 
-
-contents += '''
-//The data for our line
- var lineData = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
-                  { "x": 40,  "y": 10}, { "x": 60,  "y": 40},
-                  { "x": 80,  "y": 5},  { "x": 100, "y": 60}];
- 
- //This is the accessor function we talked about above
- var lineFunction = d3.svg.line()
-                          .x(function(d) { return d.x; })
-                          .y(function(d) { return d.y; })
+        //This is the accessor function we talked about above
+        var lineFunction = d3.svg.line()
+                          .x(function(d) { return xscale(d.x); })
+                          .y(function(d) { return yscale(d.y); })
                          .interpolate("basis");
 
-//The line SVG Path we draw
-var lineGraph = svg.append("path")
+        '''
+
+#### edges ####
+for edge_data in edge_datas:
+    contents += edge_data
+    contents += '''
+        var lineGraph = svg.append("path")
                             .attr("d", lineFunction(lineData))
                             .attr("stroke", "blue")
                             .attr("stroke-width", 2)
                             .attr("fill", "none");
+    '''
 
-       force.on("tick", tick);
 
-        function tick() {
-          link.attr("x1", function(d) { return xscale(2); })
-          .attr("y1", function(d) { return yscale(2); })
-          .attr("x2", function(d) { return xscale(4); })
-          .attr("y2", function(d) { return yscale(4); });
 
-        }
+
+contents += '''svg.append("svg:path")
+            .attr("d","'''
+
+contents += 'M " + xscale(%s) + " " + yscale(%s) + " "' % control_points[0]
+num_bezier = ( len(control_points) - 1 ) / 3
+import pdb; pdb.set_trace()
+for ib in range(num_bezier):
+    if ib == 0 :
+        contents += ' + "C " + xscale(%s) + " " + yscale(%s) + " " + xscale(%s) + " " + yscale(%s) + " " + xscale(%s) + " " + yscale(%s) ' % ( control_points[ 1 + 3 * ib ] + control_points[ 2 + 3 * ib ] + control_points[ 3 + 3 * ib ] )
+    else:
+        contents += ' + " " + xscale(%s) + " " + yscale(%s) + " " + xscale(%s) + " " + yscale(%s) + " " + xscale(%s) + " " + yscale(%s) ' % ( control_points[ 1 + 3 * ib ] + control_points[ 2 + 3 * ib ] + control_points[ 3 + 3 * ib ] )
+contents += ''')
+            .style("stroke-width", 2)
+            .style("stroke", "orange")
+            .style("fill", "none");'''
+
+
+
+
+
+
+
+contents += '''
+
+
+        svg.append("svg:path")
+            .attr("d"," M 0 60 L 50 110 L 90 70 L 140 100")
+            .style("stroke-width", 2)
+            .style("stroke", "orange")
+            .style("fill", "none");
+
+
+
+
+
+
+
+//The data for our line
+ //var lineData = [ { "x": 1,   "y": 5},  { "x": 20,  "y": 20},
+  //                { "x": 40,  "y": 10}, { "x": 60,  "y": 40},
+   //               { "x": 80,  "y": 5},  { "x": 100, "y": 60}];
+ 
+
+
+       //force.on("tick", tick);
+
+  //      function tick() {
+   //       link.attr("x1", function(d) { return xscale(2); })
+  //        .attr("y1", function(d) { return yscale(2); })
+  //        .attr("x2", function(d) { return xscale(4); })
+   //       .attr("y2", function(d) { return yscale(4); });
+
+     //   }
 
 };
 
