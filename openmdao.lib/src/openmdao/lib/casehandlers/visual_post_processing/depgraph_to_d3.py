@@ -181,49 +181,30 @@ window.onload = function(){
 # read the graphviz layout info from the plain text file
 with open("graph.plain", "r") as f:
   node_content = ''
-  edge_content = ''
-  # node_locations = {}
-
-  # edge_datas = []
   spline_data = []
   for i, line in enumerate(f):
     if line.startswith( "node"):
-        # node name x y width height label style shape color fillcolor
+        # Format of this line is
+        #     node name x y width height label style shape color fillcolor
         # shape can be ellipse, diamond, box or invhouse
         dummy, name, x, y, width, height, label, style, shape, color, fillcolor = line.split()
         if name.startswith('"'):
             name = name[1:-1]
         node_content += '{ name: "%s", id:"%s", x:%s, y:%s, shape:"%s", fixed:true},\n' % ( label, name, x, y, shape )
-        # node_locations[ name ] = (x,y)
     if line.startswith( "edge"):
-        # edge tail head n x1 y1 .. xn yn [label xl yl] style color
-        #{ source: 0, target: 1 },
+        # Format of this line is
+        #     edge tail head n x1 y1 .. xn yn [label xl yl] style color
         dummy, tail, head, n = line.split()[:4]
         if tail.startswith('"'):
             tail = tail[1:-1]
         if head.startswith('"'):
             head = head[1:-1]
-        # edge_data = 'var lineData = ['
         control_points = []
         for i in range(int(n)):
-            #edge_data += '{ "x": xscale(%s),   "y": yscale(%s)},\n' % ( line.split()[4+i], line.split()[5+i] )
-            # edge_data += '{ "x": %s,   "y": %s},\n' % ( line.split()[4+i], line.split()[5+i] )
             control_points.append( (line.split()[4+2*i], line.split()[5+2*i]) )
         spline_data.append( control_points )
-        # edge_data += ']; // ' + tail + ' ' + head 
-        # edge_datas.append( edge_data )
-        #edge_content += '{sourcex: %s ,sourcey: %s, targetx: %s, targety: %s},\n' % ( node_locations[tail][0], node_locations[tail][1], node_locations[head][0], node_locations[head][1] )
-        edge_content += '{source: "%s" , target: "%s"},\n' % ( tail, head )
 
 contents += node_content
-
-contents += '''
-            ],
-            edges: [
-            '''
-
-contents += edge_content
-
 
 contents += '''
             ]
