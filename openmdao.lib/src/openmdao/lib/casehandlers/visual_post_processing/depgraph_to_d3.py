@@ -2,29 +2,17 @@
 Basic unit testing of OpenMDAO's derivative capability.
 """
 
-from cStringIO import StringIO
-import networkx as nx
-import re
-import unittest
-from mock import Mock
+from numpy import zeros, array
 
-from numpy import zeros, array, identity, random
-
-from openmdao.lib.architectures.api import MDF, CO
-from openmdao.lib.optproblems.api import UnitScalableProblem
-
-import openmdao.main.derivatives
 from openmdao.main.api import Component, VariableTree, Driver, Assembly, set_as_top
 from openmdao.main.datatypes.api import Array, Float, VarTree, Int
-from openmdao.main.derivatives import applyJ, applyJT
 from openmdao.main.hasparameters import HasParameters
 from openmdao.main.hasobjective import HasObjective
 from openmdao.main.hasconstraints import HasConstraints
 from openmdao.main.interfaces import IHasParameters, implements
-from openmdao.test.execcomp import ExecCompWithDerivatives, ExecComp
 from openmdao.util.decorators import add_delegate
-from openmdao.util.testutil import assert_rel_error
-from openmdao.util.graph import list_deriv_vars
+
+from openmdao.util.dotgraph import plot_graph
 
 class Tree2(VariableTree):
 
@@ -144,14 +132,10 @@ top.inner_driver.add_objective('2.0*target + 2.0*comp.x + 2.0*comp.y')
 
 top.run()
 top.inner_driver.workflow.initialize_residual()
-#J = top.inner_driver.workflow.calc_gradient()
 edges = top.inner_driver.workflow._edges
-#print edges
-#print top.inner_driver.list_objective_targets()
 
-from openmdao.util.dotgraph import plot_graph
+# Save the graphviz layout info to a plain text file
 plot_graph( top._depgraph, fmt='plain' )
-#plot_graph( top._depgraph, fmt='svg' )
 
 
 
@@ -175,8 +159,6 @@ contents = '''<!doctype html>
 
         <script type="text/javascript">
 
-
-
 window.onload = function(){
   var w = 500,
       h = 500;
@@ -196,11 +178,13 @@ window.onload = function(){
     var dataSet = {
             nodes: [ '''
 
+# read the graphviz layout info from the plain text file
 with open("graph.plain", "r") as f:
   node_content = ''
   edge_content = ''
-  node_locations = {}
-  edge_datas = []
+  # node_locations = {}
+
+  # edge_datas = []
   spline_data = []
   for i, line in enumerate(f):
     if line.startswith( "node"):
@@ -210,7 +194,7 @@ with open("graph.plain", "r") as f:
         if name.startswith('"'):
             name = name[1:-1]
         node_content += '{ name: "%s", id:"%s", x:%s, y:%s, shape:"%s", fixed:true},\n' % ( label, name, x, y, shape )
-        node_locations[ name ] = (x,y)
+        # node_locations[ name ] = (x,y)
     if line.startswith( "edge"):
         # edge tail head n x1 y1 .. xn yn [label xl yl] style color
         #{ source: 0, target: 1 },
@@ -219,15 +203,15 @@ with open("graph.plain", "r") as f:
             tail = tail[1:-1]
         if head.startswith('"'):
             head = head[1:-1]
-        edge_data = 'var lineData = ['
+        # edge_data = 'var lineData = ['
         control_points = []
         for i in range(int(n)):
             #edge_data += '{ "x": xscale(%s),   "y": yscale(%s)},\n' % ( line.split()[4+i], line.split()[5+i] )
-            edge_data += '{ "x": %s,   "y": %s},\n' % ( line.split()[4+i], line.split()[5+i] )
+            # edge_data += '{ "x": %s,   "y": %s},\n' % ( line.split()[4+i], line.split()[5+i] )
             control_points.append( (line.split()[4+2*i], line.split()[5+2*i]) )
         spline_data.append( control_points )
-        edge_data += ']; // ' + tail + ' ' + head 
-        edge_datas.append( edge_data )
+        # edge_data += ']; // ' + tail + ' ' + head 
+        # edge_datas.append( edge_data )
         #edge_content += '{sourcex: %s ,sourcey: %s, targetx: %s, targety: %s},\n' % ( node_locations[tail][0], node_locations[tail][1], node_locations[head][0], node_locations[head][1] )
         edge_content += '{source: "%s" , target: "%s"},\n' % ( tail, head )
 
@@ -250,14 +234,7 @@ contents += '''
             .size([w,h])
             .start();
 
-        //var link = svg.selectAll(".link")
-         //   .data(dataSet.edges)
-          //  .enter().append("line")
-         //   .attr("class", "link")
-          //  .attr("stroke", "green")
-          //  .attr("stroke-width", 5);
-  
-
+        // create SVG groups for each node
         var node = svg.selectAll(".node")
             .data(dataSet.nodes)
             .enter().append("g")
@@ -267,6 +244,7 @@ contents += '''
             .attr("transform", function(d) { return "translate(" + xscale(d.x) + "," + yscale(d.y) + " )" } )
             ;
 
+        // draw the shapes for the various kinds of nodes
         d3.selectAll(".ellipse").append("ellipse")
             .attr("rx", 40)
             .attr("fill", "none")
@@ -274,7 +252,6 @@ contents += '''
             .attr("stroke", "black")
             .attr("stroke-width", 2)
         ;
-
         d3.selectAll(".box").append("rect")
             .attr("width", 80)
             .attr("fill", "none")
@@ -283,45 +260,41 @@ contents += '''
             .attr("stroke-width", 2)
             .attr("transform", "translate(-40,-20)")
         ;
-
         d3.selectAll(".diamond").append("polygon")
             .attr("points", "-30,0, 0,25, 30,0 0,-25")
             .attr("fill", "none")
             .attr("stroke","black")
             .attr("stroke-width",2);
-
         d3.selectAll(".invhouse").append("polygon")
             .attr("points", "-40,-25, 40,-25, 40,10 0,25 -40,10")
             .attr("fill", "none")
             .attr("stroke","black")
             .attr("stroke-width",2);
 
+        // label the node
         node.append("text")
             .text(function(d) { return d.name })
             .style("text-anchor", "middle")
             ;
 
-        //This is the accessor function we talked about above
-        var lineFunction = d3.svg.line()
-                          .x(function(d) { return xscale(d.x); })
-                          .y(function(d) { return yscale(d.y); })
-                         .interpolate("basis");
+        // build the arrowhead
+        svg.append("svg:defs").selectAll("marker")
+            .data(["end"])
+            .enter().append("svg:marker")    
+            .attr("id", String)
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 0)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .append("svg:path")
+            .attr("d", "M0,-5L10,0L0,5");
 
         '''
 
-#### edges ####
-# for edge_data in edge_datas:
-#     contents += edge_data
-#     contents += '''
-#         var lineGraph = svg.append("path")
-#                             .attr("d", lineFunction(lineData))
-#                             .attr("stroke", "blue")
-#                             .attr("stroke-width", 2)
-#                             .attr("fill", "none");
-#     '''
-
-
-
+# using the info on http://www.graphviz.org/content/how-convert-b-spline-bezier
+# also, using http://www.d3noob.org/2013/03/d3js-force-directed-graph-example-basic.html to add the arrowheads
 for control_points in spline_data:
     contents += '''svg.append("svg:path")
                 .attr("d","'''
@@ -336,7 +309,10 @@ for control_points in spline_data:
     contents += ''')
                 .style("stroke-width", 2)
                 .style("stroke", "black")
-                .style("fill", "none");'''
+                .style("fill", "none")
+                .attr("class", "link")
+                .attr("marker-end", "url(#end)")
+                ;'''
 
 contents += '''
 
