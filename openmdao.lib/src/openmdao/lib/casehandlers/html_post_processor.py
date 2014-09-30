@@ -54,7 +54,12 @@ def caseset_query_to_html(query, filename='cases.html'):
                 name = name[1:-1]
             if label.startswith('"'):
                 label = label[1:-1]
-            node_content += '{ name: "%s", id:"%s", x:%s, y:%s, shape:"%s", fixed:true},\n' % ( label, name, x, y, shape )
+            if name in cds.simulation_info['variable_metadata']:
+                nodetype = 'variable'
+            else:
+                nodetype = 'component'
+            node_content += '{ name: "%s", id:"%s", x:%s, y:%s, shape:"%s", fixed:true, nodetype:"%s"},\n' \
+                            % ( label, name, x, y, shape, nodetype )
         elif line.startswith( "edge"):
             # Format of this line is
             #     edge tail head n x1 y1 .. xn yn [label xl yl] style color

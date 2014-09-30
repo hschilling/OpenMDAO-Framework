@@ -15,7 +15,7 @@
             var case_data = JSON.parse(document.getElementById('case-data').innerHTML);
 
 
-            function SVG(tag)
+            function SVG(tag) // makes it easier to create SVG elements
             {
                return document.createElementNS('http://www.w3.org/2000/svg', tag);
             }
@@ -72,7 +72,6 @@
                 // get all the cases in an associative array with the id as the key
                 // Also collect info on the simulation_info and the driver names
                 jQuery.each( case_data, function( key , val ) {
-
 
                    // val.data has the values of the variables 
                    // need to add simulation info object for top of tree of cases
@@ -133,53 +132,58 @@
                         name: 'cases',
                         nodes: node_tree ,
                         onClick: function(event) {
-                            if ( event.node.img != "icon-page" ) { // Clicking on driver name label should not do anything for now
-                                //alert( 'case ' + event.target + ' clicked'); // just a dummy thing to do for now
+                            if ( event.node.img != "icon-page" ) { 
+
+                                // clean up any added elements or colors from the last case selection
+                                $("text").remove(".textval");
+                                $("title").remove(".titleval");
+                                $("ellipse").attr("fill", "none");
+                                $("rect").attr("fill", "none");
+
                                 d = case_objects[case_number_to_id_map[event.target]].data ;
                                 jQuery.each( d, function( key , val ) {
 
+                                    // Get only the text element with exactly the value of key
                                     t = $("text").filter(function() {
                                           return $(this).text() === key;
                                     }) ;
-                                    //if ( $('text:contains("' + key + '")').length > 0 ) {
-                                    if ( t.length === 1 ) {
-                                        console.log( "Found one and only one", key, val) ;
-                                        if ( typeof val == 'number' ) {
-                                            console.log( 'it is a number');
-                                            //shape = t.parent().children()[0];
-                                            t.prev().attr("fill", "yellow");
-                                            var svgNS = "http://www.w3.org/2000/svg";
-                                            var textval = document.createElementNS(svgNS, 'text');
-                                            textval.setAttribute('x', 20);
-                                            textval.setAttribute('y', 40);
-                                            textval.setAttribute('width', 40);
-                                            textval.setAttribute('height', 20);
-                                            textval.textContent = val.toString();
-                                            t.parent().append(textval);
 
-                                            $(SVG('circle'))
-                                                .attr('cx', 130)
-                                                .attr('cy', 75)
-                                                .attr('r', 50)
-                                                .attr('fill', 'none')
-                                                .attr('stroke', 'red')
-                                                .attr('stroke-width', 3)
+                                    if ( t.length === 1 ) {
+                                        t.prev().attr("fill", "yellow");
+                                        if ( Object.prototype.toString.call( val ) === '[object Number]' ) {
+                                            $(SVG('text'))
+                                                .attr('x', 0)
+                                                .attr('y', 15)
+                                                .attr('text-anchor', "middle")
+                                                .attr('alignment-baseline', "middle")
+                                                .attr('class', "textval")
+                                                .text( val.toPrecision(2).toString() )
+                                                .appendTo(t.parent());
+                                        }
+                                        else if ( Object.prototype.toString.call( val ) === '[object Array]' ) {
+
+                                            // Just say "Array" to indicate it has an array value
+                                            //   and user has to hover over it to see actual value
+                                            $(SVG('text'))
+                                                .attr('x', 0)
+                                                .attr('y', 15)
+                                                .attr('text-anchor', "middle")
+                                                .attr('alignment-baseline', "middle")
+                                                .attr('class', "textval")
+                                                .text( "Array" )
                                                 .appendTo(t.parent());
 
-
-                                            t.text( t.text() + ": " + val.toString() ) ;
-                                            t.css("background-color", "yellow") ;
+                                            $(SVG('title'))
+                                                .attr('x', 0)
+                                                .attr('y', 15)
+                                                .attr('text-anchor', "middle")
+                                                .attr('alignment-baseline', "middle")
+                                                .attr('class', "titleval")
+                                                .text( val.toString().replace(/,/g, ",\n") )
+                                                .appendTo(t.parent());
                                         }
-                                    }
-                                    else if ( t.length >  1 ) {
-                                        console.log( "too many", key, val) ;
-                                    }
-                                    else {
-                                        console.log( "Not Found", key, val) ;
-                                    }
-                                    // 
+                                   }
                                 });
-                                //w2ui.layout.content('main', '<div style="padding: 10px">case ' + event.target + ' clicked</div>' );
                             }
                         }  ,
                     }
@@ -221,6 +225,13 @@
                     .size([w,h])
                     .start();
 
+                // Change all the variable nodes to have a shape of rect
+                jQuery.each( dataSet.nodes, function( key , val ) {
+                    if ( val.nodetype == 'variable') {
+                        val.shape = 'box' ;
+                    }
+                }); // end each
+
                 // create SVG groups for each node
                 var node = svg.selectAll(".node")
                     .data(dataSet.nodes)
@@ -244,7 +255,7 @@
                     .attr("fill", "none")
                     .attr("height", 40)
                     .attr("stroke", "black")
-                    .attr("stroke-width", 2)
+                    .attr("stroke-width", 0)
                     .attr("transform", "translate(-40,-20)")
                 ;
                 d3.selectAll(".diamond").append("polygon")
@@ -252,6 +263,7 @@
                     .attr("fill", "none")
                     .attr("stroke","black")
                     .attr("stroke-width",2);
+
                 d3.selectAll(".invhouse").append("polygon")
                     .attr("points", "-40,-25, 40,-25, 40,10 0,25 -40,10")
                     .attr("fill", "none")
