@@ -53,7 +53,7 @@
                     padding: 0,
                     panels: [
                         { type: 'left', size: 200, resizable: true, minSize: 120 },
-                        { type: 'main',  minSize: 550, overflow: 'hidden' }
+                        { type: 'main',  minSize: 550, overflow: 'auto' }
                     ]
                 },
             };
@@ -214,6 +214,7 @@
                               .attr("width", "100%")
                               .attr('preserveAspectRatio', 'xMinYMin slice') ;
 
+                // For pan and zoom
                 var vis = svg
                   .append('svg:g')
                     .call(d3.behavior.zoom().on("zoom", rescale))
@@ -233,7 +234,7 @@
                     .attr('width', "100%")
                     .attr('height', "100%")
                     .attr('fill', 'white');
-
+                // end pan and zoom code
 
                 var dataSet = {
                     nodes: [
