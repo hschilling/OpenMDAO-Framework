@@ -5,9 +5,13 @@ Case Recording Structure
 Overall Concepts
 ++++++++++++++++
 
-Why JSON/BSON?
+The developers of OpenMDAO believe that by default, users would prefer to record everything, so that is the default. So OpenMDAO records, in addition to metadata about the model, constants, inputs, outputs.
 
-Use JSON/BSON for primary recording with post processors for other formats.
+The primary file formats for case recording in OpenMDAO are `JSON <http://en.wikipedia.org/wiki/JSON/>`_ and `BSON <http://en.wikipedia.org/wiki/BSON/>`_ 
+
+http://en.wikipedia.org/wiki/BSON
+
+If users need to have the case records in another format, OpenMDAO provides post processors that convert the JSON and BSON case record files to those formats. The formats currently supported are CSV, sqlite, and a simple text-based data dump format.
 
 Record everything by default philosophy
 
@@ -37,6 +41,8 @@ Key Methods
 
 Recording options
 +++++++++++++++++
+
+Includes and Excludes
 
 How it is determined what gets recorded
 +++++++++++++++++++++++++++++++++++++++
@@ -70,8 +76,9 @@ Significant digits stored
 Query capability
 ++++++++++++++++
 
-Concept of chaining of query methods
-Flow from JSON/BSON file to what you want:
+Concept of chaining of query methods.
+
+Flow from JSON/BSON file to what you want [ maybe make a diagram ]:
 
 * cds = CaseDataset(‘filename.json’, 'json')
   - JSON/BSON file -> casehandlers.query.CaseDataset 
@@ -79,4 +86,4 @@ Flow from JSON/BSON file to what you want:
   -	Do filtering on the Query object using methods like:
 	+ vars
 	+ locals
-	+Then call .fetch() on the Query object to get the actual data
+	+ Then call .fetch() on the Query object to get the actual data
