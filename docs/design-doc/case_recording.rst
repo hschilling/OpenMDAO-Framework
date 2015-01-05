@@ -5,11 +5,16 @@ Case Recording Structure
 Overall Concepts
 ++++++++++++++++
 
-The developers of OpenMDAO believe that by default, users would prefer to record everything, so that is the default. So OpenMDAO records, in addition to metadata about the model, constants, inputs, outputs.
+The major design decision for the case recording system in OpenMDAO was that users by default would prefer to record everything, so that is the default in OpenMDAO. So OpenMDAO records all inputs and outputs of the model at all levels of the iteration hierarchy.  In addition to metadata about the model, constants, inputs, outputs, 
 
-The primary file formats for case recording in OpenMDAO are `JSON <http://en.wikipedia.org/wiki/JSON/>`_ and `BSON <http://en.wikipedia.org/wiki/BSON/>`_ 
+The primary file formats for case recording in OpenMDAO are `JSON <http://en.wikipedia.org/wiki/JSON/>`_ and `BSON <http://en.wikipedia.org/wiki/BSON/>`_ JSON, and its binary version, BSON, were chosen because of 
 
-http://en.wikipedia.org/wiki/BSON
+* interoperability
+* openness
+* simplicity
+* maps more directly onto the data structures used in modern programming languages
+* JSON can be mapped more easily to object-oriented systems
+* JSON is easier to read for both humans and machines
 
 If users need to have the case records in another format, OpenMDAO provides post processors that convert the JSON and BSON case record files to those formats. The formats currently supported are CSV, sqlite, and a simple text-based data dump format.
 
