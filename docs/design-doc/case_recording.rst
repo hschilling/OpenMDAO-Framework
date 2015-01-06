@@ -71,30 +71,27 @@ Key Methods of Workflow and Assembly Involved in Case Recording
         If recording required, register names in recorders
   
 ``Workflow._record_case``
-
-        Record case in all recorders
+        Collect values for all the inputs and outputs for this case. 
 
         Parameters -> inputs
+        
         Objectives, Responses, Constraints, other outputs -> outputs list
 
-
-        Each of the recorders has its record method called
+        Tell all the registered recorders to record this case by calling their ``record`` method.
 
 ``Assembly.configure_recording``
-
         Called at start of top-level run to configure case recording
 
-        Start up recorders
+        Starts up the recorders, if they need any initialization
 
-        Loop through containers that are either Assemblies or Drivers
+        Loop through all of the Containers in this Assembly that are either Assemblies or Drivers
 
         For drivers, just call configure_recording on the workflow. This returns inputs and outputs to record
 
         For assemblies, recursively call Assembly.configure_recording. So this just goes down the iteration hierarching and set what gets recorded and return inputs and constants
 
 ``Assembly.restore``
-        
-        Restore a given case into a Assembly
+        Restore a given case into a Assembly. Used, for example to restart a simulation
 
 
 
@@ -134,22 +131,20 @@ The call tree for the recording of the cases varies depending on the model and h
 What Gets Recorded
 ++++++++++++++++++
 
-Parameters
-Objectives
-Responses
-Constraints - both eq and ineq
+The values that can be recorded are:
 
-        for comp in driver.workflow: 
-            successors = driver._reduced_graph.successors(comp.name)
-            for output_name, aliases in successors:
+  * Inputs
 
-        # also need get any outputs of comps that are not connected vars 
-        #   and therefore not in the graph
+    * Parameters
 
-        for comp in driver.workflow: 
-            for output_name in scope._depgraph.list_outputs(comp.name):
+  * Outputs
 
-        name = '%s.workflow.itername' % driver.name
+    * Objectives
+    * Responses
+    * Constraints - both eq and ineq
+    * Add the successors of the collapsed graph for all the Components in the driver's workflow
+    * Any outputs of comps that are not connected vars and therefore not in the graph. This is done by getting the collapsed graph outputs of all the Components in the workflow
+    * Workflow iteration name
 
 Collapsed depgraph. What is that? Successors to components in the workflow. Include examples
 
@@ -201,7 +196,7 @@ Variable Metadata
     The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, 
       low and high bounds, and more. 
 Driver info
-  * Variable metadata
+    Variable metadata
 
 Driver Info
 ===========
