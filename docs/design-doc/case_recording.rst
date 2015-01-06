@@ -80,7 +80,6 @@ This section discusses the key methods involved in recording and when they take 
   * Nested item 3.
 
 - Component.run
-
   * Nested bullet list.
   * Nested item 2.
 
