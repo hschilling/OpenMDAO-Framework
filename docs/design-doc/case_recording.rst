@@ -81,13 +81,13 @@ This section discusses the key methods involved in recording and when they take 
 
 - Component.run
 
-  * Assembly._pre_execute.
+  * Assembly._pre_execute
 
-    - Driver.configure_recording.
+    - Driver.configure_recording
 
-      * Driver.configure_recording.
+      * Driver.configure_recording
 
-        - Workflow.configure_recording.
+        - Workflow.configure_recording
 
 
 
