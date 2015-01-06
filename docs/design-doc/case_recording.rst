@@ -80,7 +80,8 @@ This section discusses the key methods involved in recording and when they take 
   * Nested item 3.
 
 - Component.run
-  * Assembly._pre_execute
+
+  * Nested bullet list.
   * Nested item 2.
 
     - Third level.
