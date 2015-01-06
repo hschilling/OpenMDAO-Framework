@@ -17,6 +17,8 @@ The primary file formats for case recording in OpenMDAO are `JSON <http://en.wik
 
 If users need to have the case records in another format, OpenMDAO provides post processors that convert the JSON and BSON case record files to those formats. The formats currently supported are CSV, sqlite, and a simple text-based data dump format.
 
+Case recorders are assigned to the top level Assembly only.
+
 Case Recording and Querying Classes
 +++++++++++++++++++++++++++++++++++
 
@@ -63,7 +65,28 @@ This diagram shows the relationship of these two classes and their main methods.
 How and Where Recording takes Place
 +++++++++++++++++++++++++++++++++++
 
-Case recorders are assigned to the top level Assembly only.
+This section discusses the key methods involved in recording and when they take place in the flow of running a model.
+
+* Component.run
+  + Assembly._pre_execute
+    - Assembly.configure_recording
+      = Driver.configure_recording
+        ^ Workflow.configure_recording
+
+test_jsonrecorder.py,  line 139, in test_nested
+  asm1.run()
+component.py,  line 512, in run
+  self._pre_execute()
+assembly.py,  line 203, in _pre_execute
+  self.configure_reco`rding(self.recording_options)
+assembly.py,  line 781, in configure_recording
+  inps, consts = obj.configure_recording(recording_options)
+driver.py,  line 437, in configure_recording
+  return self.workflow.configure_recording(recording_options)
+workflow.py,  line 506, in configure_recording
+  if recording_options:
+
+
 
 In Workflow:
    def configure_recording(self, recording_options=None):
