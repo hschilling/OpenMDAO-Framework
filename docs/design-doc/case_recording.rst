@@ -62,80 +62,78 @@ This diagram shows the relationship of these two classes and their main methods.
    Relationship of CaseDataset and Query Objects and Methods
 
 
-How and Where Recording takes Place
-+++++++++++++++++++++++++++++++++++
+Key Methods of Workflow and Assembly Involved in Case Recording
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-This section discusses the key methods involved in recording and when they take place in the flow of running a model.
-
-- Item 2.
-
-  Paragraph 2 of item 2.
-
-  * Nested bullet list.
-  * Nested item 2.
-
-    - Third level.
-    - Item 2.
-
-  * Nested item 3.
-
-- Component.run
-
-  * Assembly._pre_execute
-
-    - Driver.configure_recording
-
-      * Driver.configure_recording
-
-        - Workflow.configure_recording
-
-::
-
-  * Component.run
-    + Assembly._pre_execute
-      - Assembly.configure_recording
-        * Driver.configure_recording
-          + Workflow.configure_recording
-
-test_jsonrecorder.py,  line 139, in test_nested
-  asm1.run()
-component.py,  line 512, in run
-  self._pre_execute()
-assembly.py,  line 203, in _pre_execute
-  self.configure_reco`rding(self.recording_options)
-assembly.py,  line 781, in configure_recording
-  inps, consts = obj.configure_recording(recording_options)
-driver.py,  line 437, in configure_recording
-  return self.workflow.configure_recording(recording_options)
-workflow.py,  line 506, in configure_recording
-  if recording_options:
-
-
-
-In Workflow:
-   def configure_recording(self, recording_options=None):
-        """Called at start of top-level run to configure case recording.
+``Workflow.configure_recording``
+        
+        Called by Assembly.configure_recording at start of top-level run to configure case recording.
 
         If recording required, register names in recorders
   
-      def _record_case(self, case_uuid, err):
-        """ Record case in all recorders. """
+``Workflow._record_case``
 
-Assembly:
+        Record case in all recorders
 
-    def configure_recording(self, recording_options=None):
-        """Called at start of top-level run to configure case recording.
+        Parameters -> inputs
+        Objectives, Responses, Constraints, other outputs -> outputs list
+
+
+        Each of the recorders has its record method called
+
+``Assembly.configure_recording``
+
+        Called at start of top-level run to configure case recording
 
         Start up recorders
 
         Loop through containers that are either Assemblies or Drivers
 
-        For drivers, just call configure_recording on the workflow. Which returns 
-        	Determine (changing) inputs and outputs to record
+        For drivers, just call configure_recording on the workflow. This returns inputs and outputs to record
 
-        For assemblies, recursively call Assembly.configure_recording. 
+        For assemblies, recursively call Assembly.configure_recording. So this just goes down the iteration hierarching and set what gets recorded and return inputs and constants
 
-        So this just goes down the iteration hierarching and set what gets recorded and return inputs and constants
+``Assembly.restore``
+        
+        Restore a given case into a Assembly
+
+
+
+How and Where Recording takes Place
++++++++++++++++++++++++++++++++++++
+
+This section discusses the key methods involved in recording and when they take place in the flow of running a model.
+
+Configuring recording is done once:
+
+::
+
+  * Component.run
+    * Assembly._pre_execute
+      * Assembly.configure_recording
+        * Driver.configure_recording
+          * Workflow.configure_recording
+
+
+The call tree for the recording of the cases varies depending on the model and how nested it is but for a simple model here is where the cases are recorded:
+
+::
+
+  * Component.run
+    * Assembly.execute
+      * SimpleSystem.run
+        * Driver.run
+          * Component.run
+            * SensitivityDriver.execute
+              * Driver.run_iteration
+                * Workflow.run
+                  * Workflow._record_case
+
+
+
+
+What Gets Recorded
+++++++++++++++++++
 
 Parameters
 Objectives
@@ -147,26 +145,105 @@ Constraints - both eq and ineq
             for output_name, aliases in successors:
 
         # also need get any outputs of comps that are not connected vars 
-		#   and therefore not in the graph
+        #   and therefore not in the graph
 
         for comp in driver.workflow: 
             for output_name in scope._depgraph.list_outputs(comp.name):
 
         name = '%s.workflow.itername' % driver.name
 
-In Workflow.run, 
-
-    def _record_case(self, case_uuid, err):
-        """ Record case in all recorders. """
-
-        Parameters -> inputs
-        Objectives, Responses, Constraints, other outputs -> outputs list
+Collapsed depgraph. What is that? Successors to components in the workflow. Include examples
 
 
-        Each of the recorders has its record method called
+Recording options
++++++++++++++++++
+
+By default OpenMDAO will record all variables in the model.  This can get to be a lot
+of data and the associated file can be quite large.  You can change the default behavior
+by modifying the ``recording_options`` variable tree in the top level assembly.  There
+are three options:
+low and 
+============================  =======   ===============================================
+Option                        Default   Description
+============================  =======   ===============================================
+``save_problem_formulation``  True      Save parameters, objectives, constraints, etc.
+``includes``                  ['*']     Variables to include
+``excludes``                  [ ]       Variables to exclude (processed after includes)
+============================  =======   ===============================================
 
 
-Use test_nested as an example
+Structure of JSON files
+++++++++++++++++++++++++
+
+The JSON/BSON case recording files have three sections: metadata, driver info and cases.
+
+To save space, float arrays are represented using a binary encoding rather than text. Because of this, the difference
+in size between the BSON and JSON versions of a case recording file is that that much.
+
+Metadata/Simulation Info
+========================
+
+The metadata in the JSON/BSON file contains two graphs, both given in the form of JSON. 
+
+Collapsed dependcy graph
+    A data flow graph where each variable connection is collapsed into a single node
+Component graph
+    A graph showing the Components in the model and the connections between them
+
+Other elements of the metadata are:
+
+OpenMDAO version
+    The version of OpenMDAO used to generate this case recording file
+Constants
+    The constants of the model including values
+Expressions
+    Mathematical expressions used to define objectives and constraints
+Variable Metadata
+    The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, 
+      low and high bounds, and more. 
+Driver info
+  * Variable metadata
+
+Driver Info
+===========
+The driver section has an element for each driver in the model. Each driver is described by:
+
+  * constraints, both equality and inequality
+  * name of the driver
+  * objectives
+  * parameters
+  * a list of what variables to record
+
+Cases
+=====
+In addition to some internal bookkeeping data, the cases section is a list of all the cases as they are recorded in chronological order.
+
+Each case is associated with a single driver.
+
+In addition to containing the values recorded for this run of the driver, the case items include a possible error message from the run, error status and a timestamp for the run. The timestamp is the time the case is written.
+
+What constitutes a case? What about cases from derivative calculation?
+
+Subcases and subdrivers
+
+UUIDs
+
+Pro Tip: What’s a good way to view a JSON file? Use Chrome if it isn’t too big. Chrome lets you can expand/collapse the hierarchy of the JSON elements.
+
+
+
+Why use BSON files?
++++++++++++++++++++
+
+Significant digits stored
+
+
+
+
+
+
+
+::
 
 inputs
 
@@ -259,80 +336,3 @@ asm2.driver.output_filename = "slsqp.out"
 asm2.asm3.driver.accuracy = 1e-06
 asm2.asm3.comp1.force_fd = False
 
-Recording options
-+++++++++++++++++
-
-By default, OpenMDAO saves as much as possible about the run of a model. There are ways to specify what actually gets recorded. 
-
-Includes and Excludes
-
-  save_problem_formulation
-
-
-By default OpenMDAO will record all variables in the model.  This can get to be a lot
-of data and the associated file can be quite large.  You can change the default behavior
-by modifying the ``recording_options`` variable tree in the top level assembly.  There
-are three options:
-
-============================  =======   ===============================================
-Option                        Default   Description
-============================  =======   ===============================================
-``save_problem_formulation``  True      Save parameters, objectives, constraints, etc.
-``includes``                  ['*']     Variables to include
-``excludes``                  [ ]       Variables to exclude (processed after includes)
-============================  =======   ===============================================
-
-
-
-How it is determined what gets recorded
-+++++++++++++++++++++++++++++++++++++++
-
-Collapsed depgraph. What is that? Successors to components in the workflow. Include examples
-
-Structure of JSON files
-++++++++++++++++++++++++
-
-Metadata/Simulation Info
-========================
-
-Graphs: Depgraph, Component graph
-Driver info
-
-Binary values for float arrays
-
-Cases
-=====
-What constitutes a case? What about cases from derivative calculation?
-
-Subcases and subdrivers
-
-UUIDs
-
-Pro Tip: What’s a good way to view a JSON file? Use Chrome if it isn’t too big since you can expand/collapse
-
-
-    def restore(self, assembly, case_id):
-        """ Restore case `case_id` into `assembly`. """
-
-
-Why use BSON files?
-+++++++++++++++++++
-
-Significant digits stored
-
-Query capability
-++++++++++++++++
-
-Concept of chaining of query methods.
-
-can write back to JSON/BSON the results of a query
-
-Flow from JSON/BSON file to what you want [ maybe make a diagram ]:
-
-* cds = CaseDataset(‘filename.json’, 'json')
-  - JSON/BSON file -> casehandlers.query.CaseDataset 
-  - CaseDataSet’s .data -> casehandlers.query.Query object
-  -	Do filtering on the Query object using methods like:
-	+ vars
-	+ locals
-	+ Then call .fetch() on the Query object to get the actual data
