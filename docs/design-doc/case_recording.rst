@@ -193,7 +193,7 @@ Constants
 Expressions
     Mathematical expressions used to define objectives and constraints
 Variable Metadata
-    The variables in the model are described in terms of are they inputs or outputs
+    The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), 
 Driver info
     Variable metadata
 
