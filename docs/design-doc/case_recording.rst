@@ -156,7 +156,7 @@ By default OpenMDAO will record all variables in the model.  This can get to be 
 of data and the associated file can be quite large.  You can change the default behavior
 by modifying the ``recording_options`` variable tree in the top level assembly.  There
 are three options:
-low and 
+
 ============================  =======   ===============================================
 Option                        Default   Description
 ============================  =======   ===============================================
@@ -193,8 +193,7 @@ Constants
 Expressions
     Mathematical expressions used to define objectives and constraints
 Variable Metadata
-    The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, 
-      low and high bounds, and more. 
+    The variables in the model are described in terms of are they inputs or outputs
 Driver info
     Variable metadata
 
