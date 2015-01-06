@@ -79,6 +79,16 @@ This section discusses the key methods involved in recording and when they take 
 
   * Nested item 3.
 
+- Component.run
+
+  * Nested bullet list.
+  * Nested item 2.
+
+    - Third level.
+    - Item 2.
+
+  * Nested item 3.
+
 
 
 * Component.run
