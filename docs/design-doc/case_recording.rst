@@ -80,13 +80,14 @@ This section discusses the key methods involved in recording and when they take 
   * Nested item 3.
 
 - Component.run
-  * Nested bullet list.
-  * Nested item 2.
 
-    - Third level.
-    - Item 2.
+  * Assembly._pre_execute.
 
-  * Nested item 3.
+    - Driver.configure_recording.
+
+      * Driver.configure_recording.
+
+        - Workflow.configure_recording.
 
 
 
