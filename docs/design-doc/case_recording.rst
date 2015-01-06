@@ -89,13 +89,13 @@ This section discusses the key methods involved in recording and when they take 
 
         - Workflow.configure_recording
 
+::
 
-
-* Component.run
-  + Assembly._pre_execute
-    - Assembly.configure_recording
-      * Driver.configure_recording
-        + Workflow.configure_recording
+  * Component.run
+    + Assembly._pre_execute
+      - Assembly.configure_recording
+        * Driver.configure_recording
+          + Workflow.configure_recording
 
 test_jsonrecorder.py,  line 139, in test_nested
   asm1.run()
