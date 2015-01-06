@@ -66,7 +66,6 @@ Key Methods of Workflow and Assembly Involved in Case Recording
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ``Workflow.configure_recording``
-        
         Called by Assembly.configure_recording at start of top-level run to configure case recording.
 
         If recording required, register names in recorders
