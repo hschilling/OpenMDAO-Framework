@@ -1,3 +1,4 @@
+.. _`Case-Recording-Structure`:
 
 Case Recording Structure
 -------------------------
@@ -18,6 +19,8 @@ The primary file formats for case recording in OpenMDAO are `JSON <http://en.wik
 If users need to have the case records in another format, OpenMDAO provides post processors that convert the JSON and BSON case record files to those formats. The formats currently supported are CSV, sqlite, and a simple text-based data dump format.
 
 Case recorders are assigned to the top level Assembly only.
+
+.. seealso:: :ref:`Case-Recording`
 
 Case Recording and Querying Classes
 +++++++++++++++++++++++++++++++++++
@@ -148,6 +151,40 @@ The values that can be recorded are:
 
 Collapsed depgraph. What is that? Successors to components in the workflow. Include examples
 
+Example Showing What Gets Recorded
+++++++++++++++++++++++++++++++++++
+
+To make this more concrete, we will use the example of the Sellar MDF problem :ref:`Sellar-MDF`.
+
+
+.. _`Diagram of the Sellar MDF Model`:
+
+.. figure:: sellar_diagram.png
+   :align: center
+   :alt: Diagram of the Sellar MDF Model
+
+   Diagram of the Sellar MDF Model
+
+
+This table shows what gets recorded for each of the drivers and why they are being recorded in that case.
+
+	driver		solver
+dis1.x1	param		
+dis1.y1	?? Successor to solver		??? Successor to dis1
+dis1.y2	??? An output of solver		param
+dis1.z1	param		
+dis1.z2	param		
+			
+dis2.y1	NO		
+dis2.y2	?? Successor to solver		??? Successor to dis2
+dis2.z1	param		
+dis2.z2	param		
+			
+p0 ( dis2.y2 = dis1.y2 )	NO		constraint
+p1 ( objective )	objective		
+p2 ( constraint on dis1.y1 )	constraint		
+p3 ( constraint on dis2.y2 )	constraint		 
+
 
 Recording options
 +++++++++++++++++
@@ -169,13 +206,13 @@ Option                        Default   Description
 Structure of JSON files
 ++++++++++++++++++++++++
 
-The JSON/BSON case recording files have three sections: metadata, driver info and cases.
+The JSON/BSON case recording files have three sections: metadata, driver information and cases.
 
 To save space, float arrays are represented using a binary encoding rather than text. Because of this, the difference
 in size between the BSON and JSON versions of a case recording file is that that much.
 
-Metadata/Simulation Info
-========================
+Metadata/Simulation Information
+===============================
 
 The metadata in the JSON/BSON file contains two graphs, both given in the form of JSON. 
 
@@ -189,7 +226,7 @@ Other elements of the metadata are:
 OpenMDAO version
     The version of OpenMDAO used to generate this case recording file
 Constants
-    The constants of the model including values
+    The constants of the model including values. This includes many of the framework variables such as options for drivers.
 Expressions
     Mathematical expressions used to define objectives and constraints
 Variable Metadata

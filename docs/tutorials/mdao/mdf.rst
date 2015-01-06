@@ -1,3 +1,4 @@
+.. _`Sellar-MDF`:
 
 .. index:: Multidisciplinary Design Feasible (MDF)
 

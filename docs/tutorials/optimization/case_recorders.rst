@@ -1,3 +1,5 @@
+.. _`Case-Recording`:
+
 .. index:: case_recorder case_iterator CSV db
 
 Recording Your Inputs and Outputs
