@@ -67,6 +67,20 @@ How and Where Recording takes Place
 
 This section discusses the key methods involved in recording and when they take place in the flow of running a model.
 
+- Item 2.
+
+  Paragraph 2 of item 2.
+
+  * Nested bullet list.
+  * Nested item 2.
+
+    - Third level.
+    - Item 2.
+
+  * Nested item 3.
+
+
+
 * Component.run
   + Assembly._pre_execute
     - Assembly.configure_recording
