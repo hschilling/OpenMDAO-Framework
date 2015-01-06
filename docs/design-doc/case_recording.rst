@@ -133,18 +133,18 @@ What Gets Recorded
 
 The values that can be recorded are:
 
-  * Inputs
+* Inputs
 
-    * Parameters
+  * Parameters
 
-  * Outputs
+* Outputs
 
-    * Objectives
-    * Responses
-    * Constraints - both eq and ineq
-    * Add the successors of the collapsed graph for all the Components in the driver's workflow
-    * Any outputs of comps that are not connected vars and therefore not in the graph. This is done by getting the collapsed graph outputs of all the Components in the workflow
-    * Workflow iteration name
+  * Objectives
+  * Responses
+  * Constraints - both eq and ineq
+  * Add the successors of the collapsed graph for all the Components in the driver's workflow
+  * Any outputs of comps that are not connected vars and therefore not in the graph. This is done by getting the collapsed graph outputs of all the Components in the workflow
+  * Workflow iteration name
 
 Collapsed depgraph. What is that? Successors to components in the workflow. Include examples
 
@@ -202,11 +202,11 @@ Driver Info
 ===========
 The driver section has an element for each driver in the model. Each driver is described by:
 
-  * constraints, both equality and inequality
-  * name of the driver
-  * objectives
-  * parameters
-  * a list of what variables to record
+* constraints, both equality and inequality
+* name of the driver
+* objectives
+* parameters
+* a list of what variables to record
 
 Cases
 =====
