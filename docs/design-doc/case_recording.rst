@@ -72,12 +72,12 @@ Key Methods of Workflow and Assembly Involved in Case Recording
         Called by Assembly.configure_recording at start of top-level run to configure case recording.
 
         If recording required, register names in recorders
-  
+
 ``Workflow._record_case``
-        Collect values for all the inputs and outputs for this case. 
+        Collect values for all the inputs and outputs for this case.
 
         Parameters -> inputs
-        
+
         Objectives, Responses, Constraints, other outputs -> outputs list
 
         Tell all the registered recorders to record this case by calling their ``record`` method.
@@ -166,24 +166,26 @@ To make this more concrete, we will use the example of the Sellar MDF problem :r
    Diagram of the Sellar MDF Model
 
 
-This table shows what gets recorded for each of the drivers and why they are being recorded in that case.
+This table shows what gets recorded for each of the drivers, ``driver`` and ``solver`` and why they are being recorded in that case.
 
-	driver		solver
-dis1.x1	param		
-dis1.y1	?? Successor to solver		??? Successor to dis1
-dis1.y2	??? An output of solver		param
-dis1.z1	param		
-dis1.z2	param		
-			
-dis2.y1	NO		
-dis2.y2	?? Successor to solver		??? Successor to dis2
-dis2.z1	param		
-dis2.z2	param		
-			
-p0 ( dis2.y2 = dis1.y2 )	NO		constraint
-p1 ( objective )	objective		
-p2 ( constraint on dis1.y1 )	constraint		
-p3 ( constraint on dis2.y2 )	constraint		 
+
+=============================  ===================   ===============================================
+Variable                       driver                solver
+=============================  ===================   ===============================================
+dis1.x1                        parameter             NO
+dis1.y1                        successor to solver   successor to dis1
+dis1.y2                        output of solver      parameter
+dis1.z1                        parameter             NO
+dis1.z2                        parameter             NO
+dis2.y1                        NO                    NO
+dis2.y2                        successor to solver   successor to dis2
+dis2.z1                        parameter             NO
+dis2.z2                        parameter             NO
+p0 ( dis2.y2 = dis1.y2 )       NO                    constraint
+p1 ( objective )               objective             NO
+p2 ( constraint on dis1.y1 )   constraint            NO
+p3 ( constraint on dis2.y2 )   constraint            NO
+=============================  ===================   ===============================================
 
 
 Recording options
@@ -214,7 +216,7 @@ in size between the BSON and JSON versions of a case recording file is that that
 Metadata/Simulation Information
 ===============================
 
-The metadata in the JSON/BSON file contains two graphs, both given in the form of JSON. 
+The metadata in the JSON/BSON file contains two graphs, both given in the form of JSON.
 
 Collapsed dependcy graph
     A data flow graph where each variable connection is collapsed into a single node
@@ -230,7 +232,7 @@ Constants
 Expressions
     Mathematical expressions used to define objectives and constraints
 Variable Metadata
-    The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, and more 
+    The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, and more
 Driver info
     Variable metadata
 
