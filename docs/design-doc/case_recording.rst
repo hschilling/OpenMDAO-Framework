@@ -254,6 +254,8 @@ Each case is associated with a single driver.
 
 In addition to containing the values recorded for this run of the driver, the case items include a possible error message from the run, error status and a timestamp for the run. The timestamp is the time the case is written.
 
+TODO
+====
 What constitutes a case? What about cases from derivative calculation?
 
 Subcases and subdrivers
@@ -261,110 +263,4 @@ Subcases and subdrivers
 UUIDs
 
 Pro Tip: What’s a good way to view a JSON file? Use Chrome if it isn’t too big. Chrome lets you can expand/collapse the hierarchy of the JSON elements.
-
-
-
-Why use BSON files?
-+++++++++++++++++++
-
-Significant digits stored
-
-
-
-
-
-
-
-::
-
-inputs
-
-0 = "comp1.y"
-1 = "asm2.comp1.y"
-2 = "asm2.asm3.comp1.y"
-
-constants
-
-asm2.driver.gradient_options.fd_step_type = "absolute"
-asm2.recording_options.save_problem_formulation = True
-driver.gradient_options.fd_blocks = <traits.trait_handlers.list 0x10a8d6310; len=1>
-recording_options.save_problem_formulation = True
-asm2.asm3.force_fd = False
-asm2.driver.accuracy = 1e-06
-asm2.driver.gradient_options.derivative_direction = "auto"
-asm2.asm3.comp1.directory = ""
-driver.gradient_options.fd_step_type = "absolute"
-asm2.missing_deriv_policy = "assume_zero"
-driver.gradient_options.fd_step = 1e-06
-comp1.force_fd = False
-driver.gradient_options.fd_form = "forward"
-asm2.asm3.driver.output_filename = "slsqp.out"
-asm2.driver.gradient_options.fd_form = "forward"
-asm2.asm3.driver.gradient_options.maxiter = 100
-asm2.asm3.driver.force_fd = False
-driver.iprint = 0
-asm2.driver.gradient_options.directional_fd = False
-asm2.asm3.driver.gradient_options.derivative_direction = "auto"
-driver.gradient_options.directional_fd = False
-comp1.x = 0.0
-asm2.driver.gradient_options.maxiter = 100
-driver.gradient_options.lin_solver = "scipy_gmres"
-asm2.driver.gradient_options.fd_blocks = <traits.trait_handlers.list 0x10a8d6050; len=1>
-asm2.asm3.recording_options.excludes = <traits.trait_handlers.list 0x10a8696d8; len=1>
-asm2.driver.gradient_options.force_fd = False
-driver.gradient_options.derivative_direction = "auto"
-asm2.asm3.driver.gradient_options.directional_fd = False
-comp1.missing_deriv_policy = "error"
-driver.directory = ""
-asm2.recording_options.excludes = <traits.trait_handlers.list 0x10a8b7d08; len=1>
-asm2.comp1.force_fd = False
-asm2.driver.directory = ""
-comp1.directory = ""
-asm2.asm3.driver.gradient_options.force_fd = False
-driver.gradient_options.maxiter = 100
-driver.force_fd = False
-recording_options.excludes = <traits.trait_handlers.list 0x10a8d60a8; len=1>
-asm2.asm3.missing_deriv_policy = "assume_zero"
-asm2.comp1.missing_deriv_policy = "error"
-asm2.asm3.driver.gradient_options.fd_blocks = <traits.trait_handlers.list 0x10a8698e8; len=1>
-asm2.asm3.recording_options.save_problem_formulation = True
-driver.gradient_options.rtol = 1e-09
-asm2.asm3.directory = ""
-driver.output_filename = "slsqp.out"
-missing_deriv_policy = "assume_zero"
-asm2.driver.maxiter = 50
-asm2.asm3.recording_options.includes = <traits.trait_handlers.list 0x10a869f70; len=2>
-asm2.driver.gradient_options.rtol = 1e-09
-asm2.recording_options.includes = <traits.trait_handlers.list 0x10a8b78e8; len=2>
-driver.gradient_options.force_fd = False
-asm2.driver.gradient_options.atol = 1e-09
-asm2.asm3.driver.gradient_options.lin_solver = "scipy_gmres"
-recording_options.includes = <traits.trait_handlers.list 0x10a8d6d60; len=2>
-asm2.asm3.driver.iout = 6
-asm2.asm3.driver.maxiter = 50
-asm2.driver.force_fd = False
-asm2.asm3.driver.gradient_options.atol = 1e-09
-asm2.directory = ""
-asm2.asm3.driver.directory = ""
-asm2.comp1.directory = ""
-asm2.driver.iout = 6
-asm2.asm3.driver.gradient_options.fd_form = "forward"
-asm2.driver.gradient_options.fd_step = 1e-06
-driver.accuracy = 1e-06
-asm2.asm3.driver.gradient_options.fd_step = 1e-06
-asm2.asm3.driver.iprint = 0
-driver.iout = 6
-driver.gradient_options.atol = 1e-09
-asm2.asm3.driver.gradient_options.fd_step_type = "absolute"
-asm2.asm3.comp1.missing_deriv_policy = "error"
-asm2.driver.iprint = 0
-driver.maxiter = 50
-asm2.asm3.driver.gradient_options.rtol = 1e-09
-asm2.driver.gradient_options.lin_solver = "scipy_gmres"
-asm2.force_fd = False
-directory = ""
-force_fd = False
-asm2.driver.output_filename = "slsqp.out"
-asm2.asm3.driver.accuracy = 1e-06
-asm2.asm3.comp1.force_fd = False
 
