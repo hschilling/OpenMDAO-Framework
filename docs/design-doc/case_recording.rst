@@ -173,12 +173,12 @@ This table shows what gets recorded for each of the drivers, ``driver`` and ``so
 Variable                       driver                solver
 =============================  ===================   ===============================================
 dis1.x1                        parameter             NO
-dis1.y1                        successor to solver   successor to dis1
-dis1.y2                        output of solver      parameter
+dis1.y1                        NO                    successor to dis1
+dis1.y2                        NO                    parameter
 dis1.z1                        parameter             NO
 dis1.z2                        parameter             NO
 dis2.y1                        NO                    NO
-dis2.y2                        successor to solver   successor to dis2
+dis2.y2                        NO                    successor to dis2
 dis2.z1                        parameter             NO
 dis2.z2                        parameter             NO
 p0 ( dis2.y2 = dis1.y2 )       NO                    constraint
@@ -210,15 +210,19 @@ Structure of JSON files
 
 The JSON/BSON case recording files have three sections: metadata, driver information and cases.
 
+The file maintains links between drivers and cases using unique ID numbers. It also assigns UUIDs (using Python's uuid module ) to cases and uses them to maintain a hierarchical link between cases and their parent cases. 
+
 To save space, float arrays are represented using a binary encoding rather than text. Because of this, the difference
 in size between the BSON and JSON versions of a case recording file is that that much.
+
+Pro Tip: What’s a good way to view a JSON file? Use Google Chrome if it isn’t too big. Chrome lets you can expand/collapse the hierarchy of the JSON elements.
 
 Metadata/Simulation Information
 ===============================
 
 The metadata in the JSON/BSON file contains two graphs, both given in the form of JSON.
 
-Collapsed dependcy graph
+Collapsed dependency graph
     A data flow graph where each variable connection is collapsed into a single node
 Component graph
     A graph showing the Components in the model and the connections between them
@@ -228,13 +232,13 @@ Other elements of the metadata are:
 OpenMDAO version
     The version of OpenMDAO used to generate this case recording file
 Constants
-    The constants of the model including values. This includes many of the framework variables such as options for drivers.
+    The constants of the model including values. This includes many of the framework variables such as options for drivers
 Expressions
     Mathematical expressions used to define objectives and constraints
 Variable Metadata
-    The variables in the model are described in terms of are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, and more
+    The variables in the model are defined in terms of whether are they inputs or outputs, type ( e.g. Float ), default value, allowed values, copying options, and more
 Driver info
-    Variable metadata
+    Drivers are defined by their name in the model, parameters, equality and inequality constraints, objectives, and what variables are being recorded for that driver in its cases.
 
 Driver Info
 ===========
@@ -258,9 +262,5 @@ TODO
 ====
 What constitutes a case? What about cases from derivative calculation?
 
-Subcases and subdrivers
 
-UUIDs
-
-Pro Tip: What’s a good way to view a JSON file? Use Chrome if it isn’t too big. Chrome lets you can expand/collapse the hierarchy of the JSON elements.
 
