@@ -6,19 +6,20 @@ Case Recording Structure
 Overall Concepts
 ++++++++++++++++
 
-The case recording system in OpenMDAO is designed such that by default everything is recorded. Users can then use the query system to post process the data and get at the data they really need. OpenMDAO records all inputs and outputs of the model at all levels of the iteration hierarchy.  In addition it also records the metadata about the model, constants, inputs, and outputs.
+The case recording system in OpenMDAO is designed such that by default everything is recorded.  OpenMDAO records all inputs and outputs of the model at all levels of the iteration hierarchy.  In addition it also records the metadata about the model, constants, inputs, and outputs. Users can then use the query system to post process the data and get at the data they really need.
 
-The primary file formats for case recording in OpenMDAO are `JSON <http://en.wikipedia.org/wiki/JSON/>`_ and `BSON <http://en.wikipedia.org/wiki/BSON/>`_ JSON, and its binary version, BSON, were chosen because of the following benefits:
+Case recorders are assigned to the top level Assembly only.
+
+The primary file formats for case recording in OpenMDAO are `JSON <http://en.wikipedia.org/wiki/JSON/>`_ and and its binary version,`BSON <http://en.wikipedia.org/wiki/BSON/>`_. They were chosen because of the following benefits:
 
 * interoperability
 * openness
 * simplicity
 * maps directly onto the data structures used in modern programming languages
 * JSON is easy to read
+* JSON is easy to parse using JavaScript
 
 If users need to have the case records in another format, OpenMDAO provides post processors that convert the JSON and BSON case record files to those formats. The formats currently supported are CSV, sqlite, and a simple text-based data dump format.
-
-Case recorders are assigned to the top level Assembly only.
 
 .. seealso:: :ref:`Case-Recording`
 
@@ -35,12 +36,13 @@ The case recording system's three key classes are:
 * ``get_case_info`` - get data for a particular case
 * ``get_driver_info`` - get information about a given driver
 * ``get_simulation_info`` - get about the overall simulation or model
-* ``register`` - register a recorder
+* ``register`` - register a recorder to be used for recording the case data. 
 
 ``JSONRecorder`` - Dumps a run in JSON format to any object that looks like a file
+
 ``BSONRecorder`` - Dumps a run in BSON format to any object that looks like a file
 
-The key method is:
+The key method in these classes is:
 
 * ``record`` - Dump the given run data
 
@@ -48,13 +50,15 @@ The key method is:
 Query Classes
 =================
 
+The OpenMDAO query system lets the user read in a case record file and filter the data down to information that the user wants. 
+
 The case query system's two key classes are:
 
-``CaseDataset`` - Reads case data from a file like object. The user can access the data using the Query object via the ``data`` property
+``CaseDataset`` - Reads case data from a file-like object. The user can access the data using the Query object via the ``data`` property
 
 ``Query`` - Retains query information for a class ``CaseDataset``. All methods other than ``fetch`` and ``write`` return ``self``, so operations are easily chained. If the same method is called more than once, only the last call has an effect.
 
-This diagram shows the relationship of these two classes and their main methods.
+This diagram shows the relationship of these two classes and their main methods. Methods are shown in ovals.
 
 .. _`relationship of CaseDataset and Query Objects and Methods`:
 
@@ -65,20 +69,18 @@ This diagram shows the relationship of these two classes and their main methods.
    Relationship of CaseDataset and Query Objects and Methods
 
 
-Key Methods of Workflow and Assembly Involved in Case Recording
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Key Methods of OpenMDAO's Workflow and Assembly Classes Involved in Case Recording
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 ``Workflow.configure_recording``
         Called by Assembly.configure_recording at start of top-level run to configure case recording.
 
-        If recording required, register names in recorders
+        If recording required, register input and output variables names in recorders.
 
 ``Workflow._record_case``
         Collect values for all the inputs and outputs for this case.
 
-        Parameters -> inputs
-
-        Objectives, Responses, Constraints, other outputs -> outputs list
+        Inputs are parameters while outputs are objectives, responses, constraints, other outputs.
 
         Tell all the registered recorders to record this case by calling their ``record`` method.
 
