@@ -9,9 +9,10 @@ import unittest
 
 from math import isnan
 
+from nose import SkipTest
+
 from openmdao.main.api import Assembly, Component, VariableTree, set_as_top
 from openmdao.main.datatypes.api import Array, Float, VarTree
-from openmdao.lib.casehandlers.api import CaseDatasetHDF5, HDF5CaseRecorder
 from openmdao.lib.drivers.api import FixedPointIterator, SLSQPdriver
 from openmdao.lib.optproblems import sellar
 from openmdao.util.testutil import assert_rel_error
@@ -118,6 +119,13 @@ def create_files():
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        try:
+            import h5py
+        except ImportError:
+            raise SkipTest("this test requires h5py")
+
+        from openmdao.lib.casehandlers.api import CaseDatasetHDF5, HDF5CaseRecorder
+
         #create_files()  # Uncomment to create 'sellar.new'
         path = os.path.join(os.path.dirname(__file__), 'sellar.hdf5')
         self.cds = CaseDatasetHDF5(path, 'hdf5')

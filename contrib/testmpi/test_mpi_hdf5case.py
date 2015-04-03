@@ -1,7 +1,9 @@
-import numpy as np
-import h5py
+import os
 
-from openmdao.lib.casehandlers.api import HDF5CaseRecorder
+import numpy as np
+
+from nose import SkipTest
+
 from openmdao.lib.drivers.iterate import FixedPointIterator
 from openmdao.lib.optproblems import sellar
 from openmdao.main.api import Assembly, set_as_top
@@ -72,6 +74,8 @@ def create_serial_file():
 
 #create_serial_file()  # Uncomment to create 'test_sellar_params1_serial.hdf5' and 'cases__driver.hdf5'
 
+
+
 class MPITests1(MPITestCase):
 
     N_PROCS = 2
@@ -79,9 +83,20 @@ class MPITests1(MPITestCase):
     def setUp(self):
         self.tolerance = 0.001
 
+    def tearDown(self):
+        try:
+            os.remove('test_sellar_params1_parallel.hdf5')
+            os.remove('test_sellar_params1_parallel__driver.hdf5')
+        except OSError:
+            pass
+
     def test_sellar_params1(self):
 
-        global error_tolerance
+        try:
+            import h5py
+            from openmdao.lib.casehandlers.api import HDF5CaseRecorder
+        except ImportError:
+            raise SkipTest("These tests require h5py")
 
         top = set_as_top(SellarMDF())
 
@@ -143,6 +158,12 @@ class MPITests1(MPITestCase):
 
     def test_sellar_compare_to_serial_case_recording(self):
 
+        try:
+            import h5py
+            from openmdao.lib.casehandlers.api import HDF5CaseRecorder
+        except ImportError:
+            raise SkipTest("this test requires h5py")
+
         top = set_as_top(SellarMDF())
 
         top.connect('C1.y1','C2.y1')
@@ -157,7 +178,7 @@ class MPITests1(MPITestCase):
 
         if self.comm.rank == 0:
             # Open up and compare the non-metadata values in cases__driver_serial.hdf5 and cases__driver.hdf5
-            parallel_hdf5_cases_file = 'cases__driver.hdf5'
+            parallel_hdf5_cases_file = 'test_sellar_params1_parallel__driver.hdf5'
             serial_hdf5_cases_file = 'cases__driver_serial.hdf5'
             parallel_hdf5_file = h5py.File(parallel_hdf5_cases_file,'r')
             serial_hdf5_file = h5py.File(serial_hdf5_cases_file,'r')

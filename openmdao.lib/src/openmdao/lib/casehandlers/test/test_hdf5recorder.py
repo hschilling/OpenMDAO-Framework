@@ -3,10 +3,8 @@ import tempfile
 import shutil
 import os
 
-import h5py
+from nose import SkipTest
 
-
-from openmdao.lib.casehandlers.api import HDF5CaseRecorder
 from openmdao.lib.drivers.api import SLSQPdriver
 from openmdao.lib.drivers.api import FixedPointIterator, SLSQPdriver
 from openmdao.lib.optproblems import sellar
@@ -119,6 +117,12 @@ class TestSellarMDFCase(unittest.TestCase):
         self.top = None
 
     def test_sellarMDF_hdf5_recording(self):
+
+        try:
+            import h5py
+        except ImportError:
+            raise SkipTest("this test requires h5py")
+        from openmdao.lib.casehandlers.api import HDF5CaseRecorder
 
         hdf5_cases_filename = 'sellarMDF.hdf5'
         hdf5_cases_filepath = os.path.join(self.tempdir, hdf5_cases_filename)

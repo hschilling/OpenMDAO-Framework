@@ -591,6 +591,7 @@ class _Reader(object):
         if isinstance(filename, StringIO.StringIO):
             self._inp = filename
         else:
+            print filename, 'qqq'
             self._inp = open(filename, mode)
         self._simulation_info = self._next()
         self._state = 'drivers'
